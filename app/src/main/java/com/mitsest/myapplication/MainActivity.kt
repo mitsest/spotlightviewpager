@@ -13,11 +13,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-//        Handler().postDelayed({
+        Handler().postDelayed({
 
             showWalkthrough(findViewById(R.id.walkthroughView))
 
-//        }, 1000)
+        }, 2000)
     }
 
     fun showWalkthrough(view: WalkthroughViewWrapper?) {

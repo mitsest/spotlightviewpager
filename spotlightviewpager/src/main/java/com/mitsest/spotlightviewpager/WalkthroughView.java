@@ -19,9 +19,6 @@ import android.view.animation.OvershootInterpolator;
 
 public class WalkthroughView extends View implements View.OnClickListener, View.OnTouchListener {
 
-    private int numberOfPages;
-    private int page = 1;
-
     interface WalkthroughViewInterface {
         void onPageChanged(boolean isLastPage);
 
@@ -49,19 +46,29 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
 
     private @NonNull
     Paint backgroundPaint; // used to draw background overlay
-    int backgroundAlpha; // Used in draw (its value is changing)
 
     private @Nullable
     WalkthroughViewModel firstTarget; // Keeping a reference on first target
     private @Nullable
     WalkthroughViewModel animatingRectangle; // Used in draw (its scale and bounds are changing)
 
+    // Keeping a reference for the following two, because we nullify them when spotlight grows.
+    private @NonNull Paint borderPaint;
+    private @NonNull Paint borderGradientPaint;
+
     private boolean isMoving;
+    private int numberOfPages;
+    private int page = 1;
+
 
     public WalkthroughView(@NonNull Context context) {
         super(context);
 
         spotlight = new Spotlight(context);
+
+        borderGradientPaint = new Paint(spotlight.getBorderGradientPaint());
+        borderPaint = new Paint(spotlight.getBorderPaint());
+
         text = new Text(context);
         pagingDots = new PagingDots(context);
 
@@ -92,7 +99,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         spotlight.drawSpotlightBorder(canvas, animatingRectangle);
         spotlight.drawSpotlight(canvas, animatingRectangle);
         text.drawText(canvas, animatingRectangle, shouldDrawTextToTheBottomOfSpotlight());
-        pagingDots.drawPageIndicators(canvas, page, numberOfPages);
+        pagingDots.drawPageIndicators(canvas, numberOfPages, page);
     }
 
     private void drawBackground(Canvas canvas) {
@@ -169,8 +176,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
             return;
         }
 
-        isMoving = false;
-        setNumberOfPages(firstTarget);
+        reset(firstTarget);
 
         if (listener != null) {
             listener.onPageChanged(isLastPage());
@@ -186,6 +192,10 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
     private void animateGrow(@NonNull final WalkthroughViewModel viewModel) {
         animatingRectangle = new WalkthroughViewModel(viewModel);
 
+        clearPaintToGrow();
+
+        postInvalidate();
+
         final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top", animatingRectangle.bottom - animatingRectangle.height() / 2, animatingRectangle.top);
         final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", animatingRectangle.right - animatingRectangle.width() / 2, animatingRectangle.left);
         final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", animatingRectangle.bottom - animatingRectangle.height() / 2, animatingRectangle.bottom);
@@ -196,6 +206,8 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         rightAnim.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
+                spotlight.setSpotlightBorderGradientPaint(borderGradientPaint);
+                spotlight.setSpotlightBorderPaint(borderPaint);
             }
 
             @Override
@@ -205,7 +217,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
 
             @Override
             public void onAnimationCancel(Animator animation) {
-
+                animatePulse(viewModel);
             }
 
             @Override
@@ -376,10 +388,12 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         if (listener != null) {
             listener.onCloseAnimationFinish();
         }
-        spotlight.setRadius(getContext());
-        spotlight.setSpotlightBorderGradientPaint(spotlight.getBorderSize(), spotlight.getRadius(), spotlight.getBorderColor());
-        spotlight.setSpotlightBorderPaint(spotlight.getBorderSize(), spotlight.getRadius());
+
+        if (firstTarget != null) {
+            reset(firstTarget);
+        }
     }
+
 
     private void addPostInvalidateOnUpdate(@NonNull ValueAnimator anim) {
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -389,6 +403,19 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
             }
         });
     }
+
+    private void reset(@NonNull WalkthroughViewModel firstTarget) {
+        isMoving = false;
+        setNumberOfPages(firstTarget);
+
+        spotlight.setRadius(getContext());
+        spotlight.setBorderPaint(spotlight.getBorderPaint());
+        spotlight.setSpotlightBorderGradientPaint(borderGradientPaint);
+        spotlight.setSpotlightBorderPaint(borderPaint);
+
+        postInvalidate();
+    }
+
 
     private void clearPaintToMove() {
         text.titlePaintLayout = null;
@@ -402,6 +429,11 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         spotlight.setBorderPaint(null);
         spotlight.setBorderGradientPaint(null);
         text.pageNumberPaintLayout = null;
+    }
+
+    private void clearPaintToGrow() {
+        spotlight.setBorderPaint(null);
+        spotlight.setBorderGradientPaint(null);
     }
 
     public int getSpotLightPadding() {

@@ -65,6 +65,11 @@ public class Spotlight {
 
     }
 
+    public void setSpotlightBorderGradientPaint(@Nullable Paint paint) {
+        borderGradientPaint = paint;
+    }
+
+
     public void setSpotlightPaint() {
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
@@ -73,13 +78,20 @@ public class Spotlight {
     }
 
     public void setSpotlightBorderPaint(int spotlightBorderSize, @ColorInt int borderColor) {
-        if (borderPaint != null) {
-            borderPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            borderPaint.setAntiAlias(true);
-            borderPaint.setDither(true);
-            borderPaint.setStrokeWidth(spotlightBorderSize);
-            borderPaint.setColor(borderColor);
+        if (borderPaint == null) {
+            borderPaint = new Paint();
         }
+
+        borderPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        borderPaint.setAntiAlias(true);
+        borderPaint.setDither(true);
+        borderPaint.setStrokeWidth(spotlightBorderSize);
+        borderPaint.setColor(borderColor);
+
+    }
+
+    public void setSpotlightBorderPaint(@Nullable Paint paint) {
+        borderPaint = paint;
     }
 
     void drawSpotlight(Canvas canvas, RectF animatingRectangle) {
