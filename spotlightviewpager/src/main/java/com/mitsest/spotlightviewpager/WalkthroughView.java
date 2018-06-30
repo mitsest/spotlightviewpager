@@ -7,6 +7,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -60,6 +61,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
     private int numberOfPages;
     private int page = 1;
 
+    private boolean shouldDrawTextToTheBottomOfSpotlight;
 
     public WalkthroughView(@NonNull Context context) {
         super(context);
@@ -98,7 +100,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         drawBackground(canvas);
         spotlight.drawSpotlightBorder(canvas, animatingRectangle);
         spotlight.drawSpotlight(canvas, animatingRectangle);
-        text.drawText(canvas, animatingRectangle, shouldDrawTextToTheBottomOfSpotlight());
+        text.drawText(canvas, animatingRectangle, shouldDrawTextToTheBottomOfSpotlight);
         pagingDots.drawPageIndicators(canvas, numberOfPages, page);
     }
 
@@ -106,11 +108,9 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), backgroundPaint);
     }
 
-    private boolean shouldDrawTextToTheBottomOfSpotlight() {
+    private boolean shouldDrawTextToTheBottomOfSpotlight(@NonNull RectF animatingRectangle) {
         float offset = 0;
-        if (animatingRectangle != null) {
-            offset += animatingRectangle.bottom + text.paddingTop;
-        }
+        offset += animatingRectangle.bottom + text.paddingTop;
 
         if (text.titlePaintLayout != null) {
             offset += text.titlePaintLayout.getHeight() + text.paddingTop;
@@ -236,6 +236,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
 
     private void animatePulse(@NonNull final WalkthroughViewModel viewModel) {
         animatingRectangle = new WalkthroughViewModel(viewModel);
+        shouldDrawTextToTheBottomOfSpotlight = shouldDrawTextToTheBottomOfSpotlight(animatingRectangle);
 
         postInvalidate();
 

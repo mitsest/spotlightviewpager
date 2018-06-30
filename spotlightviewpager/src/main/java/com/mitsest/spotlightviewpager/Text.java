@@ -13,12 +13,12 @@ import android.text.TextPaint;
 import android.text.TextUtils;
 
 public class Text {
-    static final int PADDING_TOP_DP = 30;
+    static final int PADDING_TOP_DP = 16;
     int paddingTop;
-    static final int PADDING_LEFT_DP = 12;
+    static final int PADDING_LEFT_DP = 16;
     int paddingLeft;
 
-    private static final int TITLE_DP = 26;
+    private static final int TITLE_DP = 24;
     private int titleSize;
     private static final int SUBTITLE_DP = 18;
     private int subtitleSize;
@@ -75,6 +75,7 @@ public class Text {
 
     private void drawTextUp(Canvas canvas, RectF animatingRectangle) {
         float offset = 0;
+
         if (pageNumberPaintLayout != null) {
             if (animatingRectangle != null) {
                 offset = animatingRectangle.top - paddingTop - pageNumberPaintLayout.getHeight();
@@ -180,7 +181,7 @@ public class Text {
         final String subtitle = viewModel.getSubtitle();
         if (!TextUtils.isEmpty(subtitle)) {
             subtitlePaintLayout = new DynamicLayout(
-                    TextUtils.ellipsize(subtitle, subtitlePaint, width * 5, TextUtils.TruncateAt.MIDDLE),
+                    TextUtils.ellipsize(subtitle, subtitlePaint, width * 4, TextUtils.TruncateAt.MIDDLE),
                     subtitlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
         }
 
