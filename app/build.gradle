@@ -8,7 +8,7 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.mitsest.myapplication"
-        minSdkVersion 19
+        minSdkVersion 15
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"

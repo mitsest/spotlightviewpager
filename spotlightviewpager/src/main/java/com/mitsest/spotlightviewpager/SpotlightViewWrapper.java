@@ -1,49 +1,45 @@
 package com.mitsest.spotlightviewpager;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
-import com.mitsest.spotlightviewpager.R;
-
 import java.lang.ref.WeakReference;
 
-public class WalkthroughViewWrapper extends FrameLayout implements View.OnClickListener, WalkthroughView.WalkthroughViewInterface {
+public class SpotlightViewWrapper extends FrameLayout implements View.OnClickListener, SpotlightView.SpotlightViewInterface,
+        ViewTreeObserver.OnGlobalLayoutListener {
 
-    private @NonNull WeakReference<WalkthroughView> walkthroughView;
+    private @NonNull WeakReference<SpotlightView> spotlightView;
     private @NonNull int[] offsetArray;
 
-    public WalkthroughViewWrapper(@NonNull Context context) {
+    public SpotlightViewWrapper(@NonNull Context context) {
         super(context);
 
-        walkthroughView = new WeakReference<>(new WalkthroughView(context));
+        spotlightView = new WeakReference<>(new SpotlightView(context));
         offsetArray = new int[2];
 
         init(context);
     }
 
-    public WalkthroughViewWrapper(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public SpotlightViewWrapper(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        walkthroughView = new WeakReference<>(new WalkthroughView(context));
+        spotlightView = new WeakReference<>(new SpotlightView(context));
         offsetArray = new int[2];
 
         init(context);
     }
 
-    public WalkthroughViewWrapper(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public SpotlightViewWrapper(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        walkthroughView = new WeakReference<>(new WalkthroughView(context));
+        spotlightView = new WeakReference<>(new SpotlightView(context));
         offsetArray = new int[2];
 
         init(context);
@@ -52,36 +48,36 @@ public class WalkthroughViewWrapper extends FrameLayout implements View.OnClickL
 
     private void init(@NonNull Context context) {
         setVisibility(View.GONE);
-        addWalkthroughView(context);
+        addSpotlightView(context);
 
     }
 
 
-    private void addWalkthroughView(@NonNull Context context) {
-        final WalkthroughView walkthroughView = getWalkthroughView();
+    private void addSpotlightView(@NonNull Context context) {
+        final SpotlightView spotlightView = getSpotlightView();
 
-        if (walkthroughView == null) {
+        if (spotlightView == null) {
             return;
         }
 
-        walkthroughView.setListener(this);
+        spotlightView.setListener(this);
 
-        LayoutParams walkthroughViewParams = new LayoutParams(
+        LayoutParams spotlightViewParams = new LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         );
 
-        addView(walkthroughView, walkthroughViewParams);
+        addView(spotlightView, spotlightViewParams);
     }
 
     @Override
     public void onClick(View v) {
-        final WalkthroughView walkthroughView = getWalkthroughView();
+        final SpotlightView spotlightView = getSpotlightView();
 
-        if (walkthroughView == null) {
+        if (spotlightView == null) {
             return;
         }
-        walkthroughView.animateClose();
+        spotlightView.animateClose();
     }
 
     @Override
@@ -93,39 +89,29 @@ public class WalkthroughViewWrapper extends FrameLayout implements View.OnClickL
         setVisibility(View.GONE);
     }
 
-    public void setFirstTarget(@NonNull WalkthroughViewModel target) {
-        final WalkthroughView walkthroughView = getWalkthroughView();
-
-        if (walkthroughView == null) {
-            return;
-        }
-
-        walkthroughView.setFirstTarget(target);
-    }
-
     public void initView() {
-        final WalkthroughView walkthroughView = getWalkthroughView();
+        final SpotlightView spotlightView = getSpotlightView();
 
-        if (walkthroughView == null) {
+        if (spotlightView == null) {
             return;
         }
-        walkthroughView.initView();
+        spotlightView.initView();
     }
 
     public int getSpotLightPadding() {
-        final WalkthroughView walkthroughView = getWalkthroughView();
+        final SpotlightView spotlightView = getSpotlightView();
 
-        if (walkthroughView == null) {
+        if (spotlightView == null) {
             return 0;
         }
 
 
-        return walkthroughView.getSpotLightPadding();
+        return spotlightView.getSpotLightPadding();
     }
 
     @Nullable
-    public WalkthroughView getWalkthroughView() {
-        return walkthroughView.get();
+    public SpotlightView getSpotlightView() {
+        return spotlightView.get();
     }
 
     public @Nullable RectF getRectFFromView(@Nullable View spotlightView) {
@@ -184,38 +170,16 @@ public class WalkthroughViewWrapper extends FrameLayout implements View.OnClickL
         return getStartingTop(positionOnScreenArray, offsetArray) + spotlightView.getHeight() + spotLightPadding;
     }
 
-    public void initViews(final @NonNull WalkthroughViewModel firstTarget) {
-        getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                getViewTreeObserver().removeOnGlobalLayoutListener(this);
+    public void setFirstTarget(@NonNull SpotlightViewModel target) {
+        final SpotlightView spotlightView = getSpotlightView();
 
-                WalkthroughViewModel viewModel = firstTarget;
-                RectF rectF = getRectFFromView(viewModel.getSpotlightView());
-                if (rectF != null) {
-                    viewModel.setRectF(rectF);
-                }
+        if (spotlightView == null) {
+            return;
+        }
 
-                while (viewModel.getNext() != null) {
-                    viewModel = viewModel.getNext();
-                    if (viewModel == null) {
-                        break;
-                    }
-
-                    rectF = getRectFFromView(viewModel.getSpotlightView());
-                    if (rectF == null) {
-                        continue;
-                    }
-
-                    viewModel.setRectF(rectF);
-                }
-
-                setFirstTarget(firstTarget);
-                initView();
-            }
-        });
-
-        setVisibility(VISIBLE);
+        spotlightView.setFirstTarget(target);
+        getViewTreeObserver().addOnGlobalLayoutListener(this);
+        setVisibility(View.VISIBLE);
     }
 
     public boolean isVisible() {
@@ -223,15 +187,55 @@ public class WalkthroughViewWrapper extends FrameLayout implements View.OnClickL
     }
 
     public void animateClose() {
-        final WalkthroughView walkthroughView = getWalkthroughView();
+        final SpotlightView spotlightView = getSpotlightView();
 
-        if (walkthroughView == null) {
+        if (spotlightView == null) {
             return;
         }
 
 
-        walkthroughView.animateClose();
+        spotlightView.animateClose();
 
     }
 
+    @Override
+    public void onGlobalLayout() {
+        Commons.removeOnGlobalLayoutListenerTG(this, this);
+
+        final SpotlightView spotlightView = getSpotlightView();
+
+        if (spotlightView == null) {
+            return;
+        }
+
+
+        SpotlightViewModel viewModel, firstTarget;
+        viewModel = firstTarget = spotlightView.getFirstTarget();
+
+        if (viewModel == null) {
+            return;
+        }
+
+        RectF rectF = getRectFFromView(viewModel.getSpotlightView());
+        if (rectF != null) {
+            viewModel.setRectF(rectF);
+        }
+
+        while (viewModel.getNext() != null) {
+            viewModel = viewModel.getNext();
+            if (viewModel == null) {
+                break;
+            }
+
+            rectF = getRectFFromView(viewModel.getSpotlightView());
+            if (rectF == null) {
+                continue;
+            }
+
+            viewModel.setRectF(rectF);
+        }
+
+        setFirstTarget(firstTarget);
+        initView();
+    }
 }

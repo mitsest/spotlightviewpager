@@ -18,16 +18,21 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 
 
-public class WalkthroughView extends View implements View.OnClickListener, View.OnTouchListener {
+public class SpotlightView extends View implements View.OnClickListener, View.OnTouchListener {
 
-    interface WalkthroughViewInterface {
+    @Nullable
+    public SpotlightViewModel getFirstTarget() {
+        return firstTarget;
+    }
+
+    interface SpotlightViewInterface {
         void onPageChanged(boolean isLastPage);
 
         void onCloseAnimationFinish();
     }
 
     private @Nullable
-    WalkthroughViewInterface listener;
+    SpotlightViewInterface listener;
 
     private @NonNull
     Spotlight spotlight;
@@ -49,9 +54,9 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
     Paint backgroundPaint; // used to draw background overlay
 
     private @Nullable
-    WalkthroughViewModel firstTarget; // Keeping a reference on first target
+    SpotlightViewModel firstTarget; // Keeping a reference on first target
     private @Nullable
-    WalkthroughViewModel animatingRectangle; // Used in draw (its scale and bounds are changing)
+    SpotlightViewModel animatingRectangle; // Used in draw (its scale and bounds are changing)
 
     // Keeping a reference for the following two, because we nullify them when spotlight grows.
     private @NonNull Paint borderPaint;
@@ -63,7 +68,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
 
     private boolean shouldDrawTextToTheBottomOfSpotlight;
 
-    public WalkthroughView(@NonNull Context context) {
+    public SpotlightView(@NonNull Context context) {
         super(context);
 
         spotlight = new Spotlight(context);
@@ -89,7 +94,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         setBackgroundColor(ContextCompat.getColor(context, R.color.transparent));
         setOnClickListener(this);
 
-        backgroundPaint.setColor(ContextCompat.getColor(context, R.color.walkthrough_overlay_color));
+        backgroundPaint.setColor(ContextCompat.getColor(context, R.color.spotlight_overlay_color));
     }
 
 
@@ -185,12 +190,12 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         animateGrow(firstTarget);
     }
 
-    public void setFirstTarget(@NonNull WalkthroughViewModel firstTarget) {
+    public void setFirstTarget(@NonNull SpotlightViewModel firstTarget) {
         this.firstTarget = firstTarget;
     }
 
-    private void animateGrow(@NonNull final WalkthroughViewModel viewModel) {
-        animatingRectangle = new WalkthroughViewModel(viewModel);
+    private void animateGrow(@NonNull final SpotlightViewModel viewModel) {
+        animatingRectangle = new SpotlightViewModel(viewModel);
 
         clearPaintToGrow();
 
@@ -234,8 +239,8 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
 
     }
 
-    private void animatePulse(@NonNull final WalkthroughViewModel viewModel) {
-        animatingRectangle = new WalkthroughViewModel(viewModel);
+    private void animatePulse(@NonNull final SpotlightViewModel viewModel) {
+        animatingRectangle = new SpotlightViewModel(viewModel);
         shouldDrawTextToTheBottomOfSpotlight = shouldDrawTextToTheBottomOfSpotlight(animatingRectangle);
 
         postInvalidate();
@@ -278,7 +283,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         pulseAnimationSet.start();
     }
 
-    private void animateMove(@NonNull final WalkthroughViewModel viewModel) {
+    private void animateMove(@NonNull final SpotlightViewModel viewModel) {
         if (animatingRectangle == null) {
             return;
         }
@@ -322,7 +327,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         moveAnimation.setDuration(MOVE_ANIMATION_DURATION).start();
     }
 
-    private void onMoveEnd(@NonNull final WalkthroughViewModel viewModel) {
+    private void onMoveEnd(@NonNull final SpotlightViewModel viewModel) {
         animatePulse(viewModel);
 
         if (listener != null) {
@@ -405,7 +410,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         });
     }
 
-    private void reset(@NonNull WalkthroughViewModel firstTarget) {
+    private void reset(@NonNull SpotlightViewModel firstTarget) {
         isMoving = false;
         setNumberOfPages(firstTarget);
 
@@ -441,7 +446,7 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         return spotlight.getPadding();
     }
 
-    public void setListener(@Nullable WalkthroughViewInterface listener) {
+    public void setListener(@Nullable SpotlightViewInterface listener) {
         this.listener = listener;
     }
 
@@ -449,9 +454,9 @@ public class WalkthroughView extends View implements View.OnClickListener, View.
         return page == numberOfPages;
     }
 
-    void setNumberOfPages(@NonNull WalkthroughViewModel firstTarget) {
+    void setNumberOfPages(@NonNull SpotlightViewModel firstTarget) {
         page = 1;
-        WalkthroughViewModel viewModel = firstTarget;
+        SpotlightViewModel viewModel = firstTarget;
 
         int numberOfPages = 1;
         while (viewModel != null && viewModel.getNext() != null) {

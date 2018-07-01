@@ -33,8 +33,8 @@ public class Spotlight {
 
 
         padding = Commons.dpToPx(context, PADDING_DP);
-        borderColor = ContextCompat.getColor(context, R.color.walkthrough_spotlight_border_color);
-        borderSize = Commons.getDimenInPixels(context, R.dimen.walkthrough_border_size);
+        borderColor = ContextCompat.getColor(context, R.color.spotlight_border_color);
+        borderSize = Commons.getDimenInPixels(context, R.dimen.spotlight_border_size);
 
         setRadius(context);
         setSpotlightPaint();

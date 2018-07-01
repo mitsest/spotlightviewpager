@@ -4,8 +4,8 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.view.View
-import com.mitsest.spotlightviewpager.WalkthroughViewModel
-import com.mitsest.spotlightviewpager.WalkthroughViewWrapper
+import com.mitsest.spotlightviewpager.SpotlightViewModel
+import com.mitsest.spotlightviewpager.SpotlightViewWrapper
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,22 +15,24 @@ class MainActivity : AppCompatActivity() {
 
         Handler().postDelayed({
 
-            showWalkthrough(findViewById(R.id.walkthroughView))
 
         }, 2000)
+
+        showSpotlight(findViewById(R.id.spotlightView))
+
     }
 
-    fun showWalkthrough(view: WalkthroughViewWrapper?) {
+    fun showSpotlight(view: SpotlightViewWrapper?) {
 
         view ?: return
         val targetView: View = findViewById(R.id.target)
-        val viewModel = WalkthroughViewModel(
+        val viewModel = SpotlightViewModel(
                 "Lorem Ipsum",
                 "Distinctio enim nam fuga. Officiis reprehenderit totam ea vel similique. Deleniti beatae quo aut magnam harum tempore incidunt fuga.",
                 targetView)
 
         val targetView2: View = findViewById(R.id.target2)
-        val viewModel2 = WalkthroughViewModel(
+        val viewModel2 = SpotlightViewModel(
                 "Lorem Ipsum 2",
                 "Alias doloribus rerum magnam quam aliquid aliquid. Maxime est mollitia nihil. Ab quia unde facilis adipisci unde aliquam tempora dolores. Eius est dolor qui. Ex voluptatem molestiae sed eveniet beatae. Ipsum esse voluptas est ut sit totam ut sit." +
                         "Delectus consequatur et et reiciendis sed. Voluptatem id omnis est ullam molestias sapiente natus. Voluptas provident laudantium nulla qui." +
@@ -41,7 +43,7 @@ class MainActivity : AppCompatActivity() {
 
 
         viewModel.next = viewModel2
-        view.initViews(viewModel)
+        view.setFirstTarget(viewModel)
 
     }
 }

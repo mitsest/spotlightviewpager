@@ -30,8 +30,8 @@ public class PagingDots {
         marginBottom = Commons.dpToPx(context, MARGIN_BOTTOM_DB);
         itemMargin = Commons.dpToPx(context, ITEM_MARGIN_DP);
 
-        activePageColor = ContextCompat.getColor(context, R.color.walkthrough_active_page_color);
-        inactivePageColor = ContextCompat.getColor(context, R.color.walkthrough_inactive_page_color);
+        activePageColor = ContextCompat.getColor(context, R.color.spotlight_active_page_color);
+        inactivePageColor = ContextCompat.getColor(context, R.color.spotlight_inactive_page_color);
     }
 
     void drawPageIndicators(Canvas canvas, int numberOfPages, int page) {

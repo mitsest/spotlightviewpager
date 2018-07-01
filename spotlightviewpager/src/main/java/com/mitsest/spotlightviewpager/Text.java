@@ -50,7 +50,7 @@ public class Text {
         paddingTop = Commons.dpToPx(context, PADDING_TOP_DP);
         paddingLeft = Commons.dpToPx(context, PADDING_LEFT_DP);
         pageNumberSize = Commons.dpToPx(context, PAGE_NUMBER_DP);
-        textColor = ContextCompat.getColor(context, R.color.walkthrough_text_color);
+        textColor = ContextCompat.getColor(context, R.color.spotlight_text_color);
         titleSize = Commons.dpToPx(context, TITLE_DP);
         subtitleSize = Commons.dpToPx(context, SUBTITLE_DP);
 
@@ -146,27 +146,27 @@ public class Text {
         }
     }
 
-    private void setTextPageNumberPaint(int textPageNumberSize, @ColorInt int walkthroughTextColor) {
+    private void setTextPageNumberPaint(int textPageNumberSize, @ColorInt int spotlightTextColor) {
         pageNumberPaint.setAntiAlias(true);
         pageNumberPaint.setTextSize(textPageNumberSize);
-        pageNumberPaint.setColor(walkthroughTextColor);
+        pageNumberPaint.setColor(spotlightTextColor);
     }
 
-    private void setTextTitlePaint(int textTitleSize, @ColorInt int walkthroughTextColor) {
+    private void setTextTitlePaint(int textTitleSize, @ColorInt int spotlightTextColor) {
         titlePaint.setAntiAlias(true);
         titlePaint.setTextSize(textTitleSize);
-        titlePaint.setColor(walkthroughTextColor);
+        titlePaint.setColor(spotlightTextColor);
 
     }
 
-    private void setTextSubtitlePaint(int textSubtitleSize, @ColorInt int walkthroughTextColor) {
+    private void setTextSubtitlePaint(int textSubtitleSize, @ColorInt int spotlightTextColor) {
         subtitlePaint.setAntiAlias(true);
         subtitlePaint.setTextSize(textSubtitleSize);
-        subtitlePaint.setColor(walkthroughTextColor);
+        subtitlePaint.setColor(spotlightTextColor);
 
     }
 
-    public void setText(@NonNull final WalkthroughViewModel viewModel, int maxWidth, int numberOfPages, int page) {
+    public void setText(@NonNull final SpotlightViewModel viewModel, int maxWidth, int numberOfPages, int page) {
         final int width = maxWidth - paddingLeft * 2;
 
         if (width < 0) {
@@ -189,8 +189,4 @@ public class Text {
                 String.valueOf(page) + "/" + numberOfPages, pageNumberPaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
 
     }
-
-
-
-
 }

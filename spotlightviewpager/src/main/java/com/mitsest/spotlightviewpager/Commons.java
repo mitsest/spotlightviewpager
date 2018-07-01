@@ -2,11 +2,14 @@ package com.mitsest.spotlightviewpager;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Build;
 import android.support.annotation.DimenRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewTreeObserver;
 
 public class Commons {
     public static int dpToPx(@Nullable Context context, int dp) {
@@ -25,5 +28,14 @@ public class Commons {
             Log.d("spotlightviewpager", "", e);
             return 0;
         }
+    }
+
+    public static void removeOnGlobalLayoutListenerTG(@NonNull View view, @NonNull ViewTreeObserver.OnGlobalLayoutListener listener) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            view.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
+        } else {
+            view.getViewTreeObserver().removeGlobalOnLayoutListener(listener);
+        }
+
     }
 }

@@ -7,22 +7,22 @@ import android.view.View;
 
 import java.lang.ref.WeakReference;
 
-public class WalkthroughViewModel extends RectF {
+public class SpotlightViewModel extends RectF {
 
-    @Nullable private WalkthroughViewModel previous;
-    @Nullable private WalkthroughViewModel next;
+    @Nullable private SpotlightViewModel previous;
+    @Nullable private SpotlightViewModel next;
 
     @Nullable private String title;
     @Nullable private String subtitle;
     @Nullable private WeakReference<View> spotlightView;
 
-    public WalkthroughViewModel() {
+    public SpotlightViewModel() {
     }
 
-    public WalkthroughViewModel(
+    public SpotlightViewModel(
             RectF r,
-            @Nullable WalkthroughViewModel previous,
-            @Nullable WalkthroughViewModel next,
+            @Nullable SpotlightViewModel previous,
+            @Nullable SpotlightViewModel next,
             @Nullable String title,
             @Nullable String subtitle,
             @Nullable View spotlightView) {
@@ -34,31 +34,31 @@ public class WalkthroughViewModel extends RectF {
         this.spotlightView = new WeakReference<>(spotlightView);
     }
 
-    public WalkthroughViewModel(@Nullable String title,
-                                @Nullable String subtitle,
-                                @Nullable View spotlightView) {
-        this(null, null, null, title, subtitle, spotlightView);
+    public SpotlightViewModel(@Nullable String title,
+                              @Nullable String subtitle,
+                              @Nullable View spotlightView) {
+        this(new RectF(), null, null, title, subtitle, spotlightView);
     }
 
-    public WalkthroughViewModel(WalkthroughViewModel viewModel) {
+    public SpotlightViewModel(SpotlightViewModel viewModel) {
         this(viewModel, viewModel.getPrevious(), viewModel.getNext(), viewModel.getTitle(), viewModel.getSubtitle(), viewModel.getSpotlightView());
     }
 
     @Nullable
-    public WalkthroughViewModel getPrevious() {
+    public SpotlightViewModel getPrevious() {
         return previous;
     }
 
-    private void setPrevious(@Nullable WalkthroughViewModel previous) {
+    private void setPrevious(@Nullable SpotlightViewModel previous) {
         this.previous = previous;
     }
 
     @Nullable
-    public WalkthroughViewModel getNext() {
+    public SpotlightViewModel getNext() {
         return next;
     }
 
-    public void setNext(@Nullable WalkthroughViewModel next) {
+    public void setNext(@Nullable SpotlightViewModel next) {
         if (next != null) {
             next.setPrevious(this);
         }

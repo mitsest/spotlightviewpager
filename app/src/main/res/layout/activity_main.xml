@@ -23,8 +23,8 @@
         android:layout_margin="40dp"/>
 
 
-    <com.mitsest.spotlightviewpager.WalkthroughViewWrapper
-        android:id="@+id/walkthroughView"
+    <com.mitsest.spotlightviewpager.SpotlightViewWrapper
+        android:id="@+id/spotlightView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
