@@ -23,7 +23,7 @@
         android:layout_margin="40dp"/>
 
 
-    <com.mitsest.spotlightviewpager.SpotlightViewWrapper
+    <com.mitsest.spotlightviewpager.SpotlightView
         android:id="@+id/spotlightView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

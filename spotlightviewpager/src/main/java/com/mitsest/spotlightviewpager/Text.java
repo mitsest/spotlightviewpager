@@ -27,7 +27,6 @@ public class Text {
 
     private @ColorInt
     int textColor;
-
     @NonNull
     TextPaint titlePaint; // used to draw title text
     @Nullable
@@ -36,6 +35,9 @@ public class Text {
     TextPaint subtitlePaint; // used to draw subtitle
     @Nullable
     DynamicLayout subtitlePaintLayout;
+
+    private int subtitlePaintLayoutLineCount;
+
     @NonNull
     TextPaint pageNumberPaint; // used to draw page numbers
     @Nullable
@@ -165,8 +167,10 @@ public class Text {
         subtitlePaint.setColor(spotlightTextColor);
 
     }
-
     public void setText(@NonNull final SpotlightViewModel viewModel, int maxWidth, int numberOfPages, int page) {
+        setText(viewModel, maxWidth, subtitlePaintLayoutLineCount, numberOfPages, page);
+    }
+    public void setText(@NonNull final SpotlightViewModel viewModel, int maxWidth, int maxLines, int numberOfPages, int page) {
         final int width = maxWidth - paddingLeft * 2;
 
         if (width < 0) {
@@ -178,15 +182,40 @@ public class Text {
                     viewModel.getTitle(), titlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
         }
 
-        final String subtitle = viewModel.getSubtitle();
-        if (!TextUtils.isEmpty(subtitle)) {
-            subtitlePaintLayout = new DynamicLayout(
-                    TextUtils.ellipsize(subtitle, subtitlePaint, width * 4, TextUtils.TruncateAt.MIDDLE),
-                    subtitlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
-        }
+        setSubtitlePaintEllipsize(viewModel, width, maxLines);
 
         pageNumberPaintLayout = new DynamicLayout(
                 String.valueOf(page) + "/" + numberOfPages, pageNumberPaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
 
+    }
+
+    public void setSubtitlePaintEllipsize(@NonNull final SpotlightViewModel viewModel, int width, int maxLines) {
+        final String subtitle = viewModel.getSubtitle();
+        if (!TextUtils.isEmpty(subtitle)) {
+            subtitlePaintLayout = new DynamicLayout(
+                    TextUtils.ellipsize(subtitle, subtitlePaint, width * maxLines, TextUtils.TruncateAt.MIDDLE),
+                    subtitlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
+
+            subtitlePaintLayoutLineCount = subtitlePaintLayout.getLineCount();
+        }
+
+    }
+
+    public void cutSubtitleLine(@NonNull final SpotlightViewModel viewModel, int width) {
+        final String subtitle = viewModel.getSubtitle();
+        if (!TextUtils.isEmpty(subtitle) && subtitlePaintLayout != null) {
+            subtitlePaintLayout = new DynamicLayout(
+                    TextUtils.ellipsize(subtitle, subtitlePaint, width * --subtitlePaintLayoutLineCount, TextUtils.TruncateAt.MIDDLE),
+                    subtitlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
+
+        }
+    }
+
+    public int getSubtitlePaintLayoutLineCount() {
+        return subtitlePaintLayoutLineCount;
+    }
+
+    public void setSubtitlePaintLayoutLineCount(int subtitlePaintLayoutLineCount) {
+        this.subtitlePaintLayoutLineCount = subtitlePaintLayoutLineCount;
     }
 }
