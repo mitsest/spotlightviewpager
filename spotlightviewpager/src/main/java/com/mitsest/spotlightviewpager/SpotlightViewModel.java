@@ -14,7 +14,7 @@ public class SpotlightViewModel extends RectF {
 
     @Nullable private String title;
     @Nullable private String subtitle;
-    @Nullable private WeakReference<View> spotlightView;
+    @Nullable private WeakReference<View> targetView;
 
     public SpotlightViewModel() {
     }
@@ -25,23 +25,23 @@ public class SpotlightViewModel extends RectF {
             @Nullable SpotlightViewModel next,
             @Nullable String title,
             @Nullable String subtitle,
-            @Nullable View spotlightView) {
+            @Nullable View targetView) {
         super(r);
         this.previous = previous;
         this.next = next;
         this.title = title;
         this.subtitle = subtitle;
-        this.spotlightView = new WeakReference<>(spotlightView);
+        this.targetView = new WeakReference<>(targetView);
     }
 
     public SpotlightViewModel(@Nullable String title,
                               @Nullable String subtitle,
-                              @Nullable View spotlightView) {
-        this(new RectF(), null, null, title, subtitle, spotlightView);
+                              @Nullable View targetView) {
+        this(new RectF(), null, null, title, subtitle, targetView);
     }
 
     public SpotlightViewModel(SpotlightViewModel viewModel) {
-        this(viewModel, viewModel.getPrevious(), viewModel.getNext(), viewModel.getTitle(), viewModel.getSubtitle(), viewModel.getSpotlightView());
+        this(viewModel, viewModel.getPrevious(), viewModel.getNext(), viewModel.getTitle(), viewModel.getSubtitle(), viewModel.getTargetView());
     }
 
     @Nullable
@@ -101,15 +101,15 @@ public class SpotlightViewModel extends RectF {
     }
 
     @Nullable
-    public View getSpotlightView() {
-        if (spotlightView == null) {
+    public View getTargetView() {
+        if (targetView == null) {
             return null;
         }
 
-        return spotlightView.get();
+        return targetView.get();
     }
 
-    public void setSpotlightView(@Nullable View spotlightView) {
-        this.spotlightView = new WeakReference<>(spotlightView);
+    public void setTargetView(@Nullable View targetView) {
+        this.targetView = new WeakReference<>(targetView);
     }
 }

@@ -48,12 +48,12 @@ public class SpotlightViewWrapper extends FrameLayout implements View.OnClickLis
 
     private void init(@NonNull Context context) {
         setVisibility(View.GONE);
-        addSpotlightView(context);
+        addSpotlightView();
 
     }
 
 
-    private void addSpotlightView(@NonNull Context context) {
+    private void addSpotlightView() {
         final SpotlightView spotlightView = getSpotlightView();
 
         if (spotlightView == null) {
@@ -89,12 +89,28 @@ public class SpotlightViewWrapper extends FrameLayout implements View.OnClickLis
         setVisibility(View.GONE);
     }
 
-    public void initView() {
+    @Override
+    public void onGlobalLayout() {
+        Commons.removeOnGlobalLayoutListenerTG(this, this);
+
         final SpotlightView spotlightView = getSpotlightView();
 
         if (spotlightView == null) {
             return;
         }
+
+
+        SpotlightViewModel viewModel = spotlightView.getFirstTarget();
+
+        while (viewModel != null) {
+            RectF rectF = getRectFFromView(viewModel.getTargetView());
+            if (rectF != null) {
+                viewModel.setRectF(rectF);
+            }
+
+            viewModel = viewModel.getNext();
+        }
+
         spotlightView.initView();
     }
 
@@ -178,8 +194,11 @@ public class SpotlightViewWrapper extends FrameLayout implements View.OnClickLis
         }
 
         spotlightView.setFirstTarget(target);
+
         getViewTreeObserver().addOnGlobalLayoutListener(this);
+
         setVisibility(View.VISIBLE);
+
     }
 
     public boolean isVisible() {
@@ -196,46 +215,5 @@ public class SpotlightViewWrapper extends FrameLayout implements View.OnClickLis
 
         spotlightView.animateClose();
 
-    }
-
-    @Override
-    public void onGlobalLayout() {
-        Commons.removeOnGlobalLayoutListenerTG(this, this);
-
-        final SpotlightView spotlightView = getSpotlightView();
-
-        if (spotlightView == null) {
-            return;
-        }
-
-
-        SpotlightViewModel viewModel, firstTarget;
-        viewModel = firstTarget = spotlightView.getFirstTarget();
-
-        if (viewModel == null) {
-            return;
-        }
-
-        RectF rectF = getRectFFromView(viewModel.getSpotlightView());
-        if (rectF != null) {
-            viewModel.setRectF(rectF);
-        }
-
-        while (viewModel.getNext() != null) {
-            viewModel = viewModel.getNext();
-            if (viewModel == null) {
-                break;
-            }
-
-            rectF = getRectFFromView(viewModel.getSpotlightView());
-            if (rectF == null) {
-                continue;
-            }
-
-            viewModel.setRectF(rectF);
-        }
-
-        setFirstTarget(firstTarget);
-        initView();
     }
 }
