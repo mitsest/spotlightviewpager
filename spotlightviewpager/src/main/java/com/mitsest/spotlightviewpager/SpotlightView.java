@@ -54,7 +54,7 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     private static final int MOVE_ANIMATION_DURATION = 600; // ms
     private static final int CLOSE_ANIMATION_DURATION = 220; // ms
 
-    private @NonNull
+    private @NonNull @SuppressWarnings("NullableProblems")
     Paint backgroundPaint; // used to draw background overlay
 
     private @Nullable
@@ -72,8 +72,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     private boolean isMoving;
     private int numberOfPages;
     private int page = 1;
-
-    private boolean shouldDrawTextToTheBottomOfSpotlight;
 
     public SpotlightView(@NonNull Context context) {
         super(context);
@@ -131,7 +129,7 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         drawBackground(canvas);
         spotlight.drawSpotlightBorder(canvas, animatingRectangle);
         spotlight.drawSpotlight(canvas, animatingRectangle);
-        text.drawText(canvas, animatingRectangle, shouldDrawTextToTheBottomOfSpotlight);
+        text.drawText(canvas, animatingRectangle);
         pagingDots.drawPageIndicators(canvas, numberOfPages, page);
     }
 
@@ -255,44 +253,11 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
 
     }
 
-    private boolean tryDrawingTextToTheBottomOfSpotlight(@NonNull final SpotlightViewModel viewModel, int width) {
-
-        shouldDrawTextToTheBottomOfSpotlight = textFitsToBottomOfSpotlight(viewModel);
-        while (!shouldDrawTextToTheBottomOfSpotlight && text.getSubtitlePaintLayoutLineCount() != 0) {
-            text.cutSubtitleLine(viewModel, width);
-            shouldDrawTextToTheBottomOfSpotlight = textFitsToBottomOfSpotlight(viewModel);
-        }
-
-        return shouldDrawTextToTheBottomOfSpotlight;
-    }
-
-    private boolean tryDrawingTextToTheTopOfSpotlight(@NonNull final SpotlightViewModel viewModel, int width) {
-        boolean shouldDrawTextToTheTopOfSpotlight = textFitsToTopOfSpotlight(viewModel);
-        if (!shouldDrawTextToTheTopOfSpotlight) {
-            while (!shouldDrawTextToTheTopOfSpotlight && text.getSubtitlePaintLayoutLineCount() != 0) {
-                text.cutSubtitleLine(viewModel, width);
-                shouldDrawTextToTheTopOfSpotlight = textFitsToTopOfSpotlight(viewModel);
-            }
-        }
-
-        return shouldDrawTextToTheTopOfSpotlight;
-    }
-
     private void animatePulse(@NonNull final SpotlightViewModel viewModel) {
         animatingRectangle = new SpotlightViewModel(viewModel);
 
-        final int width = getWidth();
-        text.setText(viewModel, width, 15, numberOfPages, page);
-
-        shouldDrawTextToTheBottomOfSpotlight = textFitsToBottomOfSpotlight(animatingRectangle);
-
-        if (!shouldDrawTextToTheBottomOfSpotlight) {
-            boolean shouldDrawTextToTheTopOfSpotlight = tryDrawingTextToTheTopOfSpotlight(animatingRectangle, width);
-            if (!shouldDrawTextToTheTopOfSpotlight) {
-                text.setText(viewModel, width, 15, numberOfPages, page);
-                tryDrawingTextToTheBottomOfSpotlight(animatingRectangle, width);
-            }
-        }
+        final int width = getWidth(); final int bottom = getBottom();
+        text.setText(viewModel, width, 15, numberOfPages, page, bottom);
 
         postInvalidate();
 
@@ -308,7 +273,7 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         rightAnim.addListener(new Commons.AnimationListenerTG() {
             @Override
             public void onAnimationStart(Animator animation) {
-                text.setText(viewModel, width, numberOfPages, page);
+                text.setText(viewModel, width, numberOfPages, page, bottom);
             }
         });
 
@@ -415,74 +380,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         }
     }
 
-    private float getTextOffsetTop(@NonNull RectF animatingRectangle) {
-        float offset = animatingRectangle.top - text.paddingTop;
-
-        if (text.titlePaintLayout != null) {
-            offset = offset - text.titlePaintLayout.getHeight() - text.paddingTop;
-        }
-
-        if (text.subtitlePaintLayout != null) {
-            offset = offset - text.subtitlePaintLayout.getHeight() - text.paddingTop;
-        }
-
-        if (text.pageNumberPaintLayout != null) {
-            offset = offset - text.pageNumberPaintLayout.getHeight() - text.paddingTop;
-        }
-
-        return offset;
-    }
-
-    private float getTextOffsetBottom(@NonNull RectF animatingRectangle) {
-        float offset = 0;
-        offset += animatingRectangle.bottom + text.paddingTop;
-
-        if (text.titlePaintLayout != null) {
-            offset += text.titlePaintLayout.getHeight() + text.paddingTop;
-        }
-
-        if (text.subtitlePaintLayout != null) {
-            offset += text.subtitlePaintLayout.getHeight() + text.paddingTop;
-        }
-
-        if (text.pageNumberPaintLayout != null) {
-            offset += text.pageNumberPaintLayout.getHeight();
-        }
-
-        return offset;
-    }
-
-    private boolean textFitsToBottomOfSpotlight(@Nullable Float offset) {
-        if (offset == null) {
-            if (animatingRectangle == null) {
-                return true;
-            }
-
-            offset = getTextOffsetBottom(animatingRectangle);
-        }
-
-        return offset <= getBottom() - pagingDots.getMarginBottom() - pagingDots.getSize();
-    }
-
-    private boolean textFitsToBottomOfSpotlight(@NonNull RectF animatingRectangle) {
-        return textFitsToBottomOfSpotlight(getTextOffsetBottom(animatingRectangle));
-    }
-
-    private boolean textFitsToTopOfSpotlight(@Nullable Float offset) {
-        if (offset == null) {
-            if (animatingRectangle == null) {
-                return true;
-            }
-
-            offset = getTextOffsetTop(animatingRectangle);
-        }
-
-        return offset > 0;
-    }
-
-    private boolean textFitsToTopOfSpotlight(@NonNull RectF animatingRectangle) {
-        return textFitsToTopOfSpotlight(getTextOffsetTop(animatingRectangle));
-    }
 
     private void addPostInvalidateOnUpdate(@NonNull ValueAnimator anim) {
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
