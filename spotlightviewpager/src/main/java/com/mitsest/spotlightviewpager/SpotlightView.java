@@ -22,57 +22,44 @@ import android.view.animation.OvershootInterpolator;
 
 public class SpotlightView extends ViewGroup implements View.OnClickListener, ViewTreeObserver.OnGlobalLayoutListener {
 
-    interface ISpotlightView {
-        void onPageChanged(boolean isLastPage);
-        void onCloseAnimationFinish();
-    }
-
-
-    private @Nullable
-    ISpotlightView listener;
-
-
-    private @NonNull @SuppressWarnings("NullableProblems")
-    Spotlight spotlight;
-
-    private @NonNull @SuppressWarnings("NullableProblems")
-    Text text;
-
-    private @NonNull @SuppressWarnings("NullableProblems")
-    PagingDots pagingDots;
-
-    private @NonNull @SuppressWarnings("NullableProblems")
-    OffsetDelegate offsetDelegate;
-
-
     private static final int PULSE_ANIMATION_SIZE_DP = 11;
-    private int spotlightPulseAnimationSize;
-
     private static final int ENTER_ANIMATION_DURATION = 320; // ms
     private static final int GROW_ANIMATION_DURATION = 310; // ms
     private static final int PULSE_ANIMATION_DURATION = 1900; // ms
     private static final int MOVE_ANIMATION_DURATION = 600; // ms
     private static final int CLOSE_ANIMATION_DURATION = 220; // ms
-
-    private @NonNull @SuppressWarnings("NullableProblems")
+    private @Nullable
+    ISpotlightView listener;
+    private @NonNull
+    @SuppressWarnings("NullableProblems")
+    Spotlight spotlight;
+    private @NonNull
+    @SuppressWarnings("NullableProblems")
+    Text text;
+    private @NonNull
+    @SuppressWarnings("NullableProblems")
+    PagingDots pagingDots;
+    private @NonNull
+    @SuppressWarnings("NullableProblems")
+    OffsetDelegate offsetDelegate;
+    private int spotlightPulseAnimationSize;
+    private @NonNull
+    @SuppressWarnings("NullableProblems")
     Paint backgroundPaint; // used to draw background overlay
-
     private @Nullable
     SpotlightViewModel firstTarget; // Keeping a reference on first target
     private @Nullable
     SpotlightViewModel animatingRectangle; // Used in draw (its scale and bounds are changing)
-
     // Keeping a reference for the following two, because we nullify them when spotlight grows.
-    private @NonNull @SuppressWarnings("NullableProblems")
+    private @NonNull
+    @SuppressWarnings("NullableProblems")
     Paint borderPaint;
-
-    private @NonNull @SuppressWarnings("NullableProblems")
+    private @NonNull
+    @SuppressWarnings("NullableProblems")
     Paint borderGradientPaint;
-
     private boolean isMoving;
     private int numberOfPages;
     private int page = 1;
-
     public SpotlightView(@NonNull Context context) {
         super(context);
         init(context);
@@ -94,6 +81,14 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     }
 
     private void init(@NonNull Context context) {
+        setVisibility(View.GONE);
+
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+        spotlightPulseAnimationSize = Commons.dpToPx(context, PULSE_ANIMATION_SIZE_DP);
+
+        setBackgroundColor(ContextCompat.getColor(context, R.color.transparent));
+        setOnClickListener(this);
 
         spotlight = new Spotlight(context);
 
@@ -104,23 +99,11 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         pagingDots = new PagingDots(context);
 
         backgroundPaint = new Paint();
+        backgroundPaint.setColor(ContextCompat.getColor(context, R.color.spotlight_overlay_color));
 
         offsetDelegate = new OffsetDelegate();
 
-        setVisibility(View.GONE);
-
-        page = 1;
-
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-
-        spotlightPulseAnimationSize = Commons.dpToPx(context, PULSE_ANIMATION_SIZE_DP);
-
-        setBackgroundColor(ContextCompat.getColor(context, R.color.transparent));
-        setOnClickListener(this);
-
-        backgroundPaint.setColor(ContextCompat.getColor(context, R.color.spotlight_overlay_color));
     }
-
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -167,21 +150,11 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         animateMove(animatingRectangle.getPrevious());
     }
 
-    public void setFirstTarget(@NonNull SpotlightViewModel firstTarget) {
-        this.firstTarget = firstTarget;
-
-        getViewTreeObserver().addOnGlobalLayoutListener(this);
-
-        setVisibility(View.VISIBLE);
-    }
-
     // This is called when initializing the view. Reset leftover state
     public void initView() {
         if (firstTarget == null) {
             return;
         }
-
-        reset(firstTarget);
 
         if (listener != null) {
             listener.onPageChanged(false);
@@ -194,12 +167,18 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     public void onGlobalLayout() {
         Commons.removeOnGlobalLayoutListenerTG(this, this);
 
+        text.setWidth(getWidth());
+        text.setBottom(getBottom());
+
         SpotlightViewModel viewModel = getFirstTarget();
 
         while (viewModel != null) {
-            RectF rectF = offsetDelegate.getRectFFromView(viewModel.getTargetView(), getSpotLightPadding());
+
+            RectF rectF = offsetDelegate.getRectFFromView(viewModel.getTargetView(), spotlight.getPadding());
             if (rectF != null) {
                 viewModel.setRectF(rectF);
+                text.setActiveText(viewModel, 15, numberOfPages, page);
+                viewModel.setTextPosition(text);
             }
 
             viewModel = viewModel.getNext();
@@ -207,8 +186,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
 
         initView();
     }
-
-
 
     private void animateGrow(@NonNull final SpotlightViewModel viewModel) {
         animatingRectangle = new SpotlightViewModel(viewModel);
@@ -255,10 +232,7 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
 
     private void animatePulse(@NonNull final SpotlightViewModel viewModel) {
         animatingRectangle = new SpotlightViewModel(viewModel);
-
-        final int width = getWidth(); final int bottom = getBottom();
-        text.setText(viewModel, width, 15, numberOfPages, page, bottom);
-
+        text.setActiveText(viewModel, numberOfPages, page);
         postInvalidate();
 
         final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top",
@@ -269,13 +243,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", animatingRectangle.right, animatingRectangle.right + spotlightPulseAnimationSize, animatingRectangle.right);
 
         addPostInvalidateOnUpdate(rightAnim);
-
-        rightAnim.addListener(new Commons.AnimationListenerTG() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                text.setText(viewModel, width, numberOfPages, page, bottom);
-            }
-        });
 
         final AnimatorSet pulseAnimationSet = new AnimatorSet();
         pulseAnimationSet.playTogether(leftAnim, bottomAnim, rightAnim, topAnim);
@@ -329,7 +296,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         isMoving = false;
     }
 
-
     public void animateClose() {
         if (animatingRectangle == null) {
             return;
@@ -380,7 +346,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         }
     }
 
-
     private void addPostInvalidateOnUpdate(@NonNull ValueAnimator anim) {
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -401,7 +366,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
 
         postInvalidate();
     }
-
 
     private void clearPaintToMove() {
         text.titlePaintLayout = null;
@@ -453,6 +417,20 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     @Nullable
     public SpotlightViewModel getFirstTarget() {
         return firstTarget;
+    }
+
+    public void setFirstTarget(@NonNull SpotlightViewModel firstTarget) {
+        this.firstTarget = firstTarget;
+
+        getViewTreeObserver().addOnGlobalLayoutListener(this);
+
+        setVisibility(View.VISIBLE);
+    }
+
+    interface ISpotlightView {
+        void onPageChanged(boolean isLastPage);
+
+        void onCloseAnimationFinish();
     }
 
 }

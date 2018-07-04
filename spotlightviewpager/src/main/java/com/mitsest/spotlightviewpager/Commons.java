@@ -1,7 +1,6 @@
 package com.mitsest.spotlightviewpager;
 
 import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
@@ -13,7 +12,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.view.animation.Animation;
 
 public class Commons {
     public static int dpToPx(@Nullable Context context, int dp) {
@@ -43,20 +41,25 @@ public class Commons {
 
     }
 
-    public static class AnimationListenerTG implements  Animator.AnimatorListener {
+    public static class AnimationListenerTG implements Animator.AnimatorListener {
 
         @Override
-        public void onAnimationStart(Animator animation) {}
+        public void onAnimationStart(Animator animation) {
+        }
 
         @Override
-        public void onAnimationEnd(Animator animation) {}
+        public void onAnimationEnd(Animator animation) {
+        }
 
         @Override
         @CallSuper
-        public void onAnimationCancel(Animator animation) { this.onAnimationEnd(animation); }
+        public void onAnimationCancel(Animator animation) {
+            this.onAnimationEnd(animation);
+        }
 
         @Override
-        public void onAnimationRepeat(Animator animation) { }
+        public void onAnimationRepeat(Animator animation) {
+        }
     }
 
 }

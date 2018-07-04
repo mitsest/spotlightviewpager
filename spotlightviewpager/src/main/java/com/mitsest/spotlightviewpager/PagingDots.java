@@ -9,10 +9,10 @@ import android.support.v4.content.ContextCompat;
 
 public class PagingDots {
     private static final int SIZE_DP = 4;
-    private int size;
     private static final int ITEM_MARGIN_DP = 12;
-    private int itemMargin;
     private static final int MARGIN_BOTTOM_DB = 30;
+    private int size;
+    private int itemMargin;
     private int marginBottom;
 
     private @ColorInt

@@ -14,17 +14,21 @@ import android.support.v4.content.ContextCompat;
 
 public class Spotlight {
     private static final int PADDING_DP = 12;
-    private int padding;
     private static final int RADIUS_DP = 24;
-    private int radius;
     private static final int BORDER_SIZE_DP = 6;
+    private int padding;
+    private int radius;
     private int borderSize;
 
-    private @ColorInt int borderColor;
+    private @ColorInt
+    int borderColor;
 
-    private @NonNull Paint paint; // used to draw spotlight
-    private @Nullable Paint borderGradientPaint; // used to draw spotlight border
-    private @Nullable Paint borderPaint; // used to draw spotlight border
+    private @NonNull
+    Paint paint; // used to draw spotlight
+    private @Nullable
+    Paint borderGradientPaint; // used to draw spotlight border
+    private @Nullable
+    Paint borderPaint; // used to draw spotlight border
 
     Spotlight(@NonNull Context context) {
         paint = new Paint();
@@ -118,9 +122,17 @@ public class Spotlight {
         return paint;
     }
 
+    public void setPaint(@NonNull Paint paint) {
+        this.paint = paint;
+    }
+
     @Nullable
     public Paint getBorderPaint() {
         return borderPaint;
+    }
+
+    public void setBorderPaint(@Nullable Paint borderPaint) {
+        this.borderPaint = borderPaint;
     }
 
     @Nullable
@@ -128,16 +140,8 @@ public class Spotlight {
         return borderGradientPaint;
     }
 
-    public void setPaint(@NonNull Paint paint) {
-        this.paint = paint;
-    }
-
     public void setBorderGradientPaint(@Nullable Paint borderGradientPaint) {
         this.borderGradientPaint = borderGradientPaint;
-    }
-
-    public void setBorderPaint(@Nullable Paint borderPaint) {
-        this.borderPaint = borderPaint;
     }
 
     public int getPadding() {

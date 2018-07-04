@@ -12,21 +12,15 @@ import android.text.Layout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 
+
 public class Text {
     static final int PADDING_TOP_DP = 16;
-    int paddingTop;
     static final int PADDING_LEFT_DP = 16;
-    int paddingLeft;
-
     private static final int TITLE_DP = 24;
-    private int titleSize;
     private static final int SUBTITLE_DP = 18;
-    private int subtitleSize;
     private static final int PAGE_NUMBER_DP = 12;
-    private int pageNumberSize;
-
-    private @ColorInt
-    int textColor;
+    int paddingTop;
+    int paddingLeft;
     @NonNull
     TextPaint titlePaint; // used to draw title text
     @Nullable
@@ -35,22 +29,23 @@ public class Text {
     TextPaint subtitlePaint; // used to draw subtitle
     @Nullable
     DynamicLayout subtitlePaintLayout;
-
-    private int subtitleLineCount;
-
     @NonNull
     TextPaint pageNumberPaint; // used to draw page numbers
     @Nullable
     DynamicLayout pageNumberPaintLayout;
-
-    private static final int SUBTITLE_TOP = 0;
-    private static final int SUBTITLE_BOTTOM = 1;
-    private int textPosition;
+    private int titleSize;
+    private int subtitleSize;
+    private int pageNumberSize;
+    private @ColorInt
+    int textColor;
+    private int width;
+    private int bottom;
 
     public Text(@NonNull Context context) {
         titlePaint = new TextPaint();
         subtitlePaint = new TextPaint();
         pageNumberPaint = new TextPaint();
+
 
         paddingTop = Commons.dpToPx(context, PADDING_TOP_DP);
         paddingLeft = Commons.dpToPx(context, PADDING_LEFT_DP);
@@ -112,38 +107,38 @@ public class Text {
     }
 
 
-    boolean tryDrawingTextToBottomOfSpotlight(@NonNull final SpotlightViewModel viewModel, int width, int bottom) {
+    boolean tryDrawingTextToBottomOfSpotlight(@NonNull final SpotlightViewModel viewModel) {
         boolean fits = textFitsToBottomOfSpotlight(viewModel, bottom);
-        while (!fits && subtitleLineCount != 0) {
-            cutSubtitleLine(viewModel, width);
+        while (!fits && viewModel.getLineCount() != 0) {
+            cutSubtitleLine(viewModel);
             fits = textFitsToBottomOfSpotlight(viewModel, bottom);
         }
 
-        return fits && subtitleLineCount != 0;
+        return fits && viewModel.getLineCount() != 0;
     }
 
-    boolean tryDrawingTextToTopOfSpotlight(@NonNull final SpotlightViewModel viewModel, int width) {
+    boolean tryDrawingTextToTopOfSpotlight(@NonNull final SpotlightViewModel viewModel) {
         boolean fits = textFitsToTopOfSpotlight(viewModel);
         if (!fits) {
-            while (!fits && subtitleLineCount != 0) {
-                cutSubtitleLine(viewModel, width);
+            while (!fits && viewModel.getLineCount() != 0) {
+                cutSubtitleLine(viewModel);
                 fits = textFitsToTopOfSpotlight(viewModel);
             }
         }
 
-        return fits && subtitleLineCount != 0;
+        return fits && viewModel.getLineCount() != 0;
     }
 
 
-    void drawText(Canvas canvas, RectF animatingRectangle) {
+    void drawText(Canvas canvas, SpotlightViewModel viewModel) {
         canvas.save();
 
         canvas.translate(paddingLeft, 0);
 
-        if (textPosition == SUBTITLE_TOP) {
-            drawTextTop(canvas, animatingRectangle);
+        if (viewModel.getTextPosition() == SpotlightViewModel.SUBTITLE_TOP) {
+            drawTextTop(canvas, viewModel);
         } else {
-            drawTextBottom(canvas, animatingRectangle);
+            drawTextBottom(canvas, viewModel);
         }
 
         canvas.restore();
@@ -241,12 +236,16 @@ public class Text {
         subtitlePaint.setColor(spotlightTextColor);
 
     }
-    public void setText(@NonNull final SpotlightViewModel viewModel, int maxWidth, int numberOfPages, int page, int bottom) {
-        setText(viewModel, maxWidth, subtitleLineCount, numberOfPages, page, bottom);
-    }
-    public void setText(@NonNull final SpotlightViewModel viewModel, int maxWidth, int maxLines, int numberOfPages, int page, int bottom) {
-        final int width = maxWidth - paddingLeft * 2;
 
+    public void setActiveText(@NonNull final SpotlightViewModel viewModel, int numberOfPages, int page) {
+        setActiveText(viewModel, viewModel.getLineCount(), numberOfPages, page);
+    }
+
+    public void setWidth(int width) {
+        this.width = width - paddingLeft * 2;
+    }
+
+    public void setActiveText(@NonNull final SpotlightViewModel viewModel, int maxLines, int numberOfPages, int page) {
         if (width < 0) {
             return;
         }
@@ -256,58 +255,38 @@ public class Text {
                     viewModel.getTitle(), titlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
         }
 
-        setSubtitlePaintEllipsize(viewModel, width, maxLines);
+        setSubtitlePaintEllipsize(viewModel, maxLines);
 
         pageNumberPaintLayout = new DynamicLayout(
                 String.valueOf(page) + "/" + numberOfPages, pageNumberPaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
-
-        boolean fitsBottom = tryDrawingTextToBottomOfSpotlight(viewModel, width, bottom);
-
-        if (!fitsBottom) {
-            textPosition = SUBTITLE_TOP;
-
-            boolean fitsTop = tryDrawingTextToTopOfSpotlight(viewModel, width);
-            if (!fitsTop) {
-                textPosition = SUBTITLE_BOTTOM;
-
-                fitsBottom = tryDrawingTextToBottomOfSpotlight(viewModel, width, bottom);
-                if (!fitsBottom) {
-                    textPosition = SUBTITLE_TOP;
-                }
-            }
-        } else {
-            textPosition = SUBTITLE_BOTTOM;
-        }
-
     }
 
-    public void setSubtitlePaintEllipsize(@NonNull final SpotlightViewModel viewModel, int width, int maxLines) {
-        final String subtitle = viewModel.getSubtitle();
-        if (!TextUtils.isEmpty(subtitle)) {
+    public void setSubtitlePaintEllipsize(@NonNull final SpotlightViewModel viewModel, int maxLines) {
+        viewModel.setLineCount(maxLines);
+
+        if (!TextUtils.isEmpty(viewModel.getSubtitle())) {
             subtitlePaintLayout = new DynamicLayout(
-                    TextUtils.ellipsize(subtitle, subtitlePaint, width * maxLines, TextUtils.TruncateAt.MIDDLE),
+                    TextUtils.ellipsize(viewModel.getSubtitle(), subtitlePaint, width * viewModel.getLineCount(), TextUtils.TruncateAt.MIDDLE),
                     subtitlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
 
-            subtitleLineCount = subtitlePaintLayout.getLineCount();
+            viewModel.setLineCount(subtitlePaintLayout.getLineCount());
         }
 
     }
 
-    public void cutSubtitleLine(@NonNull final SpotlightViewModel viewModel, int width) {
-        final String subtitle = viewModel.getSubtitle();
-        if (!TextUtils.isEmpty(subtitle) && subtitlePaintLayout != null) {
+    public void cutSubtitleLine(@NonNull final SpotlightViewModel viewModel) {
+        viewModel.setLineCount(viewModel.getLineCount() - 1);
+
+        if (!TextUtils.isEmpty(viewModel.getSubtitle()) && subtitlePaintLayout != null) {
+
             subtitlePaintLayout = new DynamicLayout(
-                    TextUtils.ellipsize(subtitle, subtitlePaint, width * --subtitleLineCount, TextUtils.TruncateAt.MIDDLE),
+                    TextUtils.ellipsize(viewModel.getSubtitle(), subtitlePaint, width * viewModel.getLineCount(), TextUtils.TruncateAt.MIDDLE),
                     subtitlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
 
         }
     }
 
-    public int getSubtitleLineCount() {
-        return subtitleLineCount;
-    }
-
-    public void setSubtitleLineCount(int subtitleLineCount) {
-        this.subtitleLineCount = subtitleLineCount;
+    public void setBottom(int bottom) {
+        this.bottom = bottom;
     }
 }
