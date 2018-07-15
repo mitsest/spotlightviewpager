@@ -6,14 +6,14 @@ public class Subtitle {
     @Nullable
     private String subtitle;
 
-    private int lineCount;
+    private int maxLines;
 
 
     private int textPosition;
 
-    public Subtitle(@Nullable String subtitle, int lineCount) {
+    public Subtitle(@Nullable String subtitle, int maxLines) {
         this.subtitle = subtitle;
-        this.lineCount = lineCount;
+        this.maxLines = maxLines;
     }
 
     @Nullable
@@ -25,12 +25,12 @@ public class Subtitle {
         this.subtitle = subtitle;
     }
 
-    public int getLineCount() {
-        return lineCount;
+    public int getMaxLines() {
+        return maxLines;
     }
 
-    public void setLineCount(int lineCount) {
-        this.lineCount = lineCount;
+    public void setMaxLines(int maxLines) {
+        this.maxLines = maxLines;
     }
 
     public int getTextPosition() {

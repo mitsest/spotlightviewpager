@@ -12,7 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 
-public class Spotlight {
+public class SpotlightPaint {
     private static final int PADDING_DP = 12;
     private static final int RADIUS_DP = 24;
     private static final int BORDER_SIZE_DP = 6;
@@ -30,7 +30,7 @@ public class Spotlight {
     private @Nullable
     Paint borderPaint; // used to draw spotlight border
 
-    Spotlight(@NonNull Context context) {
+    SpotlightPaint(@NonNull Context context) {
         paint = new Paint();
         borderPaint = new Paint();
         borderGradientPaint = new Paint();

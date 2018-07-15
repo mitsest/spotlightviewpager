@@ -16,6 +16,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 
@@ -24,7 +25,7 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
 
     private static final int PULSE_ANIMATION_SIZE_DP = 11;
     private static final int ENTER_ANIMATION_DURATION = 320; // ms
-    private static final int GROW_ANIMATION_DURATION = 310; // ms
+    private static final int GROW_ANIMATION_DURATION = 300; // ms
     private static final int PULSE_ANIMATION_DURATION = 1900; // ms
     private static final int MOVE_ANIMATION_DURATION = 600; // ms
     private static final int CLOSE_ANIMATION_DURATION = 220; // ms
@@ -32,17 +33,10 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     ISpotlightView listener;
     private @NonNull
     @SuppressWarnings("NullableProblems")
-    Spotlight spotlight;
-    private @NonNull
+    SpotlightPaint spotlight;
     @SuppressWarnings("NullableProblems")
-    Text text;
     private @NonNull
-    @SuppressWarnings("NullableProblems")
-    PagingDots pagingDots;
-    private @NonNull
-    @SuppressWarnings("NullableProblems")
     OffsetDelegate offsetDelegate;
-    private int spotlightPulseAnimationSize;
     private @NonNull
     @SuppressWarnings("NullableProblems")
     Paint backgroundPaint; // used to draw background overlay
@@ -58,8 +52,8 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     @SuppressWarnings("NullableProblems")
     Paint borderGradientPaint;
     private boolean isMoving;
-    private int numberOfPages;
-    private int page = 1;
+    private int spotlightPulseAnimationSize;
+
     public SpotlightView(@NonNull Context context) {
         super(context);
         init(context);
@@ -90,13 +84,10 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         setBackgroundColor(ContextCompat.getColor(context, R.color.transparent));
         setOnClickListener(this);
 
-        spotlight = new Spotlight(context);
+        spotlight = new SpotlightPaint(context);
 
         borderGradientPaint = new Paint(spotlight.getBorderGradientPaint());
         borderPaint = new Paint(spotlight.getBorderPaint());
-
-        text = new Text(context);
-        pagingDots = new PagingDots(context);
 
         backgroundPaint = new Paint();
         backgroundPaint.setColor(ContextCompat.getColor(context, R.color.spotlight_overlay_color));
@@ -112,8 +103,10 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         drawBackground(canvas);
         spotlight.drawSpotlightBorder(canvas, animatingRectangle);
         spotlight.drawSpotlight(canvas, animatingRectangle);
-        text.drawText(canvas, animatingRectangle);
-        pagingDots.drawPageIndicators(canvas, numberOfPages, page);
+//        text.drawText(canvas, animatingRectangle);
+        if (animatingRectangle != null) {
+            animatingRectangle.drawText(canvas);
+        }
     }
 
     private void drawBackground(Canvas canvas) {
@@ -131,7 +124,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
             return;
         }
 
-        page++;
         animateMove(animatingRectangle.getNext());
 
     }
@@ -146,14 +138,40 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
             return;
         }
 
-        page--;
         animateMove(animatingRectangle.getPrevious());
     }
 
-    // This is called when initializing the view. Reset leftover state
-    public void initView() {
+
+    @Override
+    public void onGlobalLayout() {
         if (firstTarget == null) {
             return;
+        }
+
+        Commons.removeOnGlobalLayoutListenerTG(this, this);
+
+        SpotlightViewModel viewModel = getFirstTarget();
+
+        int numberOfPages = 0;
+        while (viewModel != null) {
+
+            numberOfPages++;
+            viewModel.setText(getWidth(), getBottom(), numberOfPages);
+
+            RectF rectF = offsetDelegate.getRectFFromView(viewModel.getTargetView(), spotlight.getPadding());
+            if (rectF != null) {
+                viewModel.setRectF(rectF);
+                viewModel.setTextPosition();
+            }
+            viewModel.setText();
+
+            viewModel = viewModel.getNext();
+        }
+
+        viewModel = getFirstTarget();
+        while (viewModel != null) {
+            viewModel.setNumberOfPages(numberOfPages);
+            viewModel = viewModel.getNext();
         }
 
         if (listener != null) {
@@ -163,32 +181,8 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         animateGrow(firstTarget);
     }
 
-    @Override
-    public void onGlobalLayout() {
-        Commons.removeOnGlobalLayoutListenerTG(this, this);
-
-        text.setWidth(getWidth());
-        text.setBottom(getBottom());
-
-        SpotlightViewModel viewModel = getFirstTarget();
-
-        while (viewModel != null) {
-
-            RectF rectF = offsetDelegate.getRectFFromView(viewModel.getTargetView(), spotlight.getPadding());
-            if (rectF != null) {
-                viewModel.setRectF(rectF);
-                text.setActiveText(viewModel, 15, numberOfPages, page);
-                viewModel.setTextPosition(text);
-            }
-
-            viewModel = viewModel.getNext();
-        }
-
-        initView();
-    }
-
     private void animateGrow(@NonNull final SpotlightViewModel viewModel) {
-        animatingRectangle = new SpotlightViewModel(viewModel);
+        animatingRectangle = viewModel;
 
         clearPaintToGrow();
 
@@ -224,15 +218,14 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
 
         final AnimatorSet growAnimationSet = new AnimatorSet();
         growAnimationSet.playTogether(leftAnim, bottomAnim, rightAnim, topAnim);
-        growAnimationSet.setInterpolator(new FastOutSlowInInterpolator());
+        growAnimationSet.setInterpolator(new AccelerateDecelerateInterpolator());
         growAnimationSet.setDuration(GROW_ANIMATION_DURATION);
         growAnimationSet.start();
 
     }
 
     private void animatePulse(@NonNull final SpotlightViewModel viewModel) {
-        animatingRectangle = new SpotlightViewModel(viewModel);
-        text.setActiveText(viewModel, numberOfPages, page);
+        animatingRectangle = viewModel;
         postInvalidate();
 
         final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top",
@@ -290,7 +283,7 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         animatePulse(viewModel);
 
         if (listener != null) {
-            listener.onPageChanged(isLastPage());
+//            listener.onPageChanged(isLastPage());
         }
 
         isMoving = false;
@@ -340,10 +333,8 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         }
 
         setVisibility(View.GONE);
+        reset();
 
-        if (firstTarget != null) {
-            reset(firstTarget);
-        }
     }
 
     private void addPostInvalidateOnUpdate(@NonNull ValueAnimator anim) {
@@ -355,9 +346,8 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         });
     }
 
-    private void reset(@NonNull SpotlightViewModel firstTarget) {
+    private void reset() {
         isMoving = false;
-        setNumberOfPages(firstTarget);
 
         spotlight.setRadius(getContext());
         spotlight.setBorderPaint(spotlight.getBorderPaint());
@@ -368,17 +358,17 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     }
 
     private void clearPaintToMove() {
-        text.titlePaintLayout = null;
-        text.subtitlePaintLayout = null;
-        text.pageNumberPaintLayout = null;
+//        text.titlePaintLayout = null;
+//        text.subtitlePaintLayout = null;
+//        text.pageNumberPaintLayout = null;
     }
 
     private void clearPaintToClose() {
-        text.titlePaintLayout = null;
-        text.subtitlePaintLayout = null;
+//        text.titlePaintLayout = null;
+//        text.subtitlePaintLayout = null;
         spotlight.setBorderPaint(null);
         spotlight.setBorderGradientPaint(null);
-        text.pageNumberPaintLayout = null;
+//        text.pageNumberPaintLayout = null;
     }
 
     private void clearPaintToGrow() {
@@ -392,26 +382,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
 
     public void setListener(@Nullable ISpotlightView listener) {
         this.listener = listener;
-    }
-
-    public boolean isLastPage() {
-        return page == numberOfPages;
-    }
-
-    void setNumberOfPages(@NonNull SpotlightViewModel firstTarget) {
-        page = 1;
-        SpotlightViewModel viewModel = firstTarget;
-
-        int numberOfPages = 1;
-        while (viewModel != null && viewModel.getNext() != null) {
-
-            numberOfPages++;
-            viewModel = viewModel.getNext();
-
-        }
-
-        this.numberOfPages = numberOfPages;
-
     }
 
     @Nullable

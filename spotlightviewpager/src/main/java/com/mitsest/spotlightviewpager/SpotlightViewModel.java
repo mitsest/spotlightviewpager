@@ -1,5 +1,6 @@
 package com.mitsest.spotlightviewpager;
 
+import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -21,6 +22,8 @@ public class SpotlightViewModel extends RectF {
     private WeakReference<View> targetView;
     private @NonNull
     Subtitle subtitle;
+    private @NonNull
+    Text text;
 
     public SpotlightViewModel() {
     }
@@ -37,6 +40,11 @@ public class SpotlightViewModel extends RectF {
         this.next = next;
         this.title = title;
         this.subtitle = subtitle;
+
+        if (targetView != null) {
+            this.text = new Text(targetView.getContext());
+        }
+
         this.targetView = new WeakReference<>(targetView);
     }
     public SpotlightViewModel(@Nullable String title,
@@ -127,40 +135,47 @@ public class SpotlightViewModel extends RectF {
         this.targetView = new WeakReference<>(targetView);
     }
 
-    public int getLineCount() {
-        return subtitle.getLineCount();
+    public int getMaxLines() {
+        return subtitle.getMaxLines();
     }
 
-    public void setLineCount(int lineCount) {
-        subtitle.setLineCount(lineCount);
+    public void setMaxLines(int lineCount) {
+        subtitle.setMaxLines(lineCount);
     }
 
     public int getTextPosition() {
         return subtitle.getTextPosition();
     }
 
-    public void setTextPosition(@NonNull Text text) {
+    public void setTextPosition() {
         boolean fitsBottom = text.tryDrawingTextToBottomOfSpotlight(this);
 
         if (!fitsBottom) {
             setTextPosition(SpotlightViewModel.SUBTITLE_TOP);
-
-            boolean fitsTop = text.tryDrawingTextToTopOfSpotlight(this);
-            if (!fitsTop) {
-                setTextPosition(SpotlightViewModel.SUBTITLE_BOTTOM);
-
-                fitsBottom = text.tryDrawingTextToBottomOfSpotlight(this);
-                if (!fitsBottom) {
-                    setTextPosition(SpotlightViewModel.SUBTITLE_TOP);
-                }
-            }
         } else {
             setTextPosition(SpotlightViewModel.SUBTITLE_BOTTOM);
         }
-
     }
 
     public void setTextPosition(int i) {
         subtitle.setTextPosition(i);
+    }
+
+    public void drawText(Canvas canvas) {
+        text.drawText(canvas, this);
+    }
+
+    public void setText() {
+        text.setText(this);
+    }
+
+    public void setText(int width, int bottom, int page) {
+        text.setMaxWidth(width);
+        text.setMaxBottom(bottom);
+        text.setPage(page);
+    }
+
+    public void setNumberOfPages(int numberOfPages) {
+        text.setNumberOfPages(numberOfPages);
     }
 }

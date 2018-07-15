@@ -13,36 +13,36 @@ public class OffsetDelegate {
         this.offsetArray = new int[2];
     }
 
-    private static float getStartingLeft(int[] positionOnScreenArray, int[] offsetArray) {
+    private float getStartingLeft(int[] positionOnScreenArray) {
         return positionOnScreenArray[0] - offsetArray[0];
     }
 
-    private static float getStartingTop(int[] positionOnScreenArray, int[] offsetArray) {
+    private float getStartingTop(int[] positionOnScreenArray) {
         return positionOnScreenArray[1] - offsetArray[1];
     }
 
-    private static float computeStartingLeft(int[] positionOnScreenArray, int[] offsetArray, int spotLightPadding) {
-        return getStartingLeft(positionOnScreenArray, offsetArray) - spotLightPadding;
+    private float computeStartingLeft(int[] positionOnScreenArray, int safeArea) {
+        return getStartingLeft(positionOnScreenArray) - safeArea;
     }
 
-    private static float computeStartingTop(int[] positionOnScreenArray, int[] offsetArray, int spotLightPadding) {
-        return getStartingTop(positionOnScreenArray, offsetArray) - spotLightPadding;
+    private float computeStartingTop(int[] positionOnScreenArray, int safeArea) {
+        return getStartingTop(positionOnScreenArray) - safeArea;
     }
 
-    private static float computeStartingRight(int[] positionOnScreenArray, int[] offsetArray, int spotLightPadding, @Nullable final View spotlightView) {
+    private float computeStartingRight(int[] positionOnScreenArray, int safeArea, @Nullable final View spotlightView) {
         if (spotlightView == null) {
             return 0;
         }
 
-        return getStartingLeft(positionOnScreenArray, offsetArray) + spotlightView.getWidth() + spotLightPadding;
+        return getStartingLeft(positionOnScreenArray) + spotlightView.getWidth() + safeArea;
     }
 
-    private static float computeStartingBottom(int[] positionOnScreenArray, int[] offsetArray, int spotLightPadding, @Nullable final View spotlightView) {
+    private float computeStartingBottom(int[] positionOnScreenArray, int safeArea, @Nullable final View spotlightView) {
         if (spotlightView == null) {
             return 0;
         }
 
-        return getStartingTop(positionOnScreenArray, offsetArray) + spotlightView.getHeight() + spotLightPadding;
+        return getStartingTop(positionOnScreenArray) + spotlightView.getHeight() + safeArea;
     }
 
     public @Nullable
@@ -54,10 +54,10 @@ public class OffsetDelegate {
         int[] positionOnScreen = new int[2];
         spotlightView.getLocationInWindow(positionOnScreen);
 
-        float rectLeft = computeStartingLeft(positionOnScreen, offsetArray, safeArea);
-        float rectRight = computeStartingRight(positionOnScreen, offsetArray, safeArea, spotlightView);
-        float rectTop = computeStartingTop(positionOnScreen, offsetArray, safeArea);
-        float rectBottom = computeStartingBottom(positionOnScreen, offsetArray, safeArea, spotlightView);
+        float rectLeft = computeStartingLeft(positionOnScreen, safeArea);
+        float rectRight = computeStartingRight(positionOnScreen, safeArea, spotlightView);
+        float rectTop = computeStartingTop(positionOnScreen, safeArea);
+        float rectBottom = computeStartingBottom(positionOnScreen, safeArea, spotlightView);
 
         return new RectF(rectLeft, rectTop, rectRight, rectBottom);
     }
