@@ -3,6 +3,10 @@ package com.mitsest.spotlightviewpager;
 import android.support.annotation.Nullable;
 
 public class Subtitle {
+    public static final int SUBTITLE_TOP = 0;
+    public static final int SUBTITLE_BOTTOM = 1;
+
+
     @Nullable
     private String subtitle;
 

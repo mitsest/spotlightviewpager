@@ -10,8 +10,6 @@ import java.lang.ref.WeakReference;
 
 public class SpotlightViewModel extends RectF {
 
-    public static final int SUBTITLE_TOP = 0;
-    public static final int SUBTITLE_BOTTOM = 1;
     @Nullable
     private SpotlightViewModel previous;
     @Nullable
@@ -120,6 +118,9 @@ public class SpotlightViewModel extends RectF {
         this.right = r.right;
         this.top = r.top;
         this.bottom = r.bottom;
+
+        this.setText();
+        this.setTextPosition();
     }
 
     @Nullable
@@ -151,9 +152,9 @@ public class SpotlightViewModel extends RectF {
         boolean fitsBottom = text.tryDrawingTextToBottomOfSpotlight(this);
 
         if (!fitsBottom) {
-            setTextPosition(SpotlightViewModel.SUBTITLE_TOP);
+            setTextPosition(Subtitle.SUBTITLE_TOP);
         } else {
-            setTextPosition(SpotlightViewModel.SUBTITLE_BOTTOM);
+            setTextPosition(Subtitle.SUBTITLE_BOTTOM);
         }
     }
 
@@ -169,9 +170,13 @@ public class SpotlightViewModel extends RectF {
         text.setText(this);
     }
 
-    public void setText(int width, int bottom, int page) {
+    public void setMaxWidth(int width) {
         text.setMaxWidth(width);
+    }
+    public void setMaxBottom(int bottom) {
         text.setMaxBottom(bottom);
+    }
+    public void setPage(int page) {
         text.setPage(page);
     }
 

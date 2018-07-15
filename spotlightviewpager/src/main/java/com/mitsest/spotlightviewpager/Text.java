@@ -114,7 +114,7 @@ public class Text {
 
         canvas.translate(paddingLeft, 0);
 
-        if (viewModel.getTextPosition() == SpotlightViewModel.SUBTITLE_TOP) {
+        if (viewModel.getTextPosition() == Subtitle.SUBTITLE_TOP) {
             float topOffset = getTextOffsetTop(viewModel);
             drawText(canvas, topOffset);
         } else {

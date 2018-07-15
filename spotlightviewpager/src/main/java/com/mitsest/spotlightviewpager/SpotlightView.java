@@ -103,8 +103,8 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         drawBackground(canvas);
         spotlight.drawSpotlightBorder(canvas, animatingRectangle);
         spotlight.drawSpotlight(canvas, animatingRectangle);
-//        text.drawText(canvas, animatingRectangle);
-        if (animatingRectangle != null) {
+
+        if (!isMoving && animatingRectangle != null) {
             animatingRectangle.drawText(canvas);
         }
     }
@@ -154,16 +154,16 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
 
         int numberOfPages = 0;
         while (viewModel != null) {
+            RectF rectF = offsetDelegate.getRectFFromView(viewModel.getTargetView(), spotlight.getPadding());
 
             numberOfPages++;
-            viewModel.setText(getWidth(), getBottom(), numberOfPages);
+            viewModel.setMaxWidth(getWidth());
+            viewModel.setMaxBottom(getBottom());
+            viewModel.setPage(numberOfPages);
 
-            RectF rectF = offsetDelegate.getRectFFromView(viewModel.getTargetView(), spotlight.getPadding());
             if (rectF != null) {
                 viewModel.setRectF(rectF);
-                viewModel.setTextPosition();
             }
-            viewModel.setText();
 
             viewModel = viewModel.getNext();
         }
