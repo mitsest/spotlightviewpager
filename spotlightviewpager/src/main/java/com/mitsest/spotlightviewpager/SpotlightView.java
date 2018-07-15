@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,42 +22,36 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 
+import java.util.List;
 
-public class SpotlightView extends ViewGroup implements View.OnClickListener, ViewTreeObserver.OnGlobalLayoutListener {
+
+public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayoutListener {
 
     private static final int PULSE_ANIMATION_SIZE_DP = 11;
     private static final int ENTER_ANIMATION_DURATION = 800; // ms
+    private static final int TEXT_ENTER_ANIMATION_DURATION = 1900; // ms
     private static final int GROW_ANIMATION_DURATION = 300; // ms
     private static final int PULSE_ANIMATION_DURATION = 1900; // ms
     private static final int MOVE_ANIMATION_DURATION = 600; // ms
     private static final int CLOSE_ANIMATION_DURATION = 220; // ms
-    private @Nullable
-    ISpotlightView listener;
-    private @NonNull
-    @SuppressWarnings("NullableProblems")
-    SpotlightPaint spotlight;
-    @SuppressWarnings("NullableProblems")
-    private @NonNull
-    OffsetDelegate offsetDelegate;
+    private @Nullable ISpotlightView listener;
+    private @NonNull SpotlightPaint spotlight;
+    private @NonNull OffsetDelegate offsetDelegate;
+    private @NonNull OpacityDelegate backgroundOpacity;
 
-    private int backgroundOpacity = 0;
-    private static final int BACKGROUND_OPACITY_END = 235;
-    private @NonNull
-    @SuppressWarnings("NullableProblems")
-    Paint backgroundPaint; // used to draw background overlay
+    private static final int OPACITY_FULL = 235;
+    private @NonNull Paint backgroundPaint; // used to draw background overlay
     private @Nullable
     SpotlightViewModel firstTarget; // Keeping a reference on first target
     private @Nullable
     SpotlightViewModel animatingRectangle; // Used in draw (its scale and bounds are changing)
     // Keeping a reference for the following two, because we nullify them when spotlight grows.
-    private @NonNull
-    @SuppressWarnings("NullableProblems")
-    Paint borderPaint;
-    private @NonNull
-    @SuppressWarnings("NullableProblems")
-    Paint borderGradientPaint;
+    private @NonNull Paint borderPaint;
+    private @NonNull Paint borderGradientPaint;
     private boolean isMoving;
     private int spotlightPulseAnimationSize;
+
+    private @NonNull OnSwipeTouchListener swipeTouchListener;
 
     public SpotlightView(@NonNull Context context) {
         super(context);
@@ -86,7 +81,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         spotlightPulseAnimationSize = Commons.dpToPx(context, PULSE_ANIMATION_SIZE_DP);
 
         setBackgroundColor(ContextCompat.getColor(context, R.color.transparent));
-        setOnClickListener(this);
 
         spotlight = new SpotlightPaint(context);
 
@@ -98,6 +92,29 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
 
         offsetDelegate = new OffsetDelegate();
 
+        backgroundOpacity = new OpacityDelegate();
+
+        swipeTouchListener = new OnSwipeTouchListener(context) {
+            @Override
+            public void onSwipeLeft() {
+                super.onSwipeLeft();
+                SpotlightView.this.showNext();
+            }
+
+            @Override
+            public void onSwipeRight() {
+                super.onSwipeRight();
+                SpotlightView.this.showPrevious();
+            }
+
+            @Override
+            public void onClick() {
+                super.onClick();
+                SpotlightView.this.showNext();
+            }
+        };
+        setOnClickListener(null);
+        setOnTouchListener(swipeTouchListener);
     }
 
     @Override
@@ -114,12 +131,12 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     }
 
     private void drawBackground(Canvas canvas) {
-        backgroundPaint.setAlpha(backgroundOpacity);
+        backgroundPaint.setAlpha(backgroundOpacity.getOpacity());
         canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), backgroundPaint);
     }
 
-    @Override
-    public void onClick(View v) {
+
+    public void showNext() {
         if (isMoving || animatingRectangle == null) {
             return;
         }
@@ -173,12 +190,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
             viewModel = viewModel.getNext();
         }
 
-        viewModel = getFirstTarget();
-        while (viewModel != null) {
-            viewModel.setNumberOfPages(numberOfPages);
-            viewModel = viewModel.getNext();
-        }
-
         if (listener != null) {
             listener.onPageChanged(false);
         }
@@ -187,18 +198,7 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     }
 
     private void animateBackground(final @NonNull SpotlightViewModel viewModel) {
-        final ValueAnimator opacityAnim = ValueAnimator.ofInt(0, BACKGROUND_OPACITY_END);
-        opacityAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                try {
-                    backgroundOpacity = Integer.valueOf(animation.getAnimatedValue().toString());
-                } catch (Exception e) {
-                    //
-                }
-            }
-        });
-
+        final ValueAnimator opacityAnim = backgroundOpacity.getOpacityAnimator();
         addPostInvalidateOnUpdate(opacityAnim);
 
         opacityAnim.addListener(new Commons.AnimationListenerTG() {
@@ -212,9 +212,17 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         opacityAnim.setInterpolator(new LinearInterpolator());
         opacityAnim.setDuration(ENTER_ANIMATION_DURATION);
         opacityAnim.start();
-
-
     }
+
+    private void animateText(final @NonNull SpotlightViewModel viewModel) {
+        final ValueAnimator opacityAnim = viewModel.getTextOpacityAnimation();
+        addPostInvalidateOnUpdate(opacityAnim);
+
+        opacityAnim.setInterpolator(new LinearOutSlowInInterpolator());
+        opacityAnim.setDuration(TEXT_ENTER_ANIMATION_DURATION);
+        opacityAnim.start();
+    }
+
 
 
     private void animateGrow(@NonNull final SpotlightViewModel viewModel) {
@@ -272,6 +280,13 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", animatingRectangle.right, animatingRectangle.right + spotlightPulseAnimationSize, animatingRectangle.right);
 
         addPostInvalidateOnUpdate(rightAnim);
+        rightAnim.addListener(new Commons.AnimationListenerTG() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                animateText(animatingRectangle);
+            }
+        });
 
         final AnimatorSet pulseAnimationSet = new AnimatorSet();
         pulseAnimationSet.playTogether(leftAnim, bottomAnim, rightAnim, topAnim);
@@ -285,14 +300,10 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
             return;
         }
 
-        clearPaintToMove();
-        postInvalidate();
-
         final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top", animatingRectangle.top, viewModel.top);
         final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", animatingRectangle.left, viewModel.left);
         final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", animatingRectangle.bottom, viewModel.bottom);
         final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", animatingRectangle.right, viewModel.right);
-
 
         addPostInvalidateOnUpdate(rightAnim);
 
@@ -330,8 +341,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
             return;
         }
 
-        clearPaintToClose();
-
         final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top", animatingRectangle.top, 0);
         final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", animatingRectangle.left, 0);
         final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", animatingRectangle.bottom, getHeight());
@@ -350,6 +359,15 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         addPostInvalidateOnUpdate(radiusAnim);
 
         radiusAnim.addListener(new Commons.AnimationListenerTG() {
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                spotlight.setBorderPaint(null);
+                spotlight.setBorderGradientPaint(null);
+                isMoving = true;
+            }
+
             @Override
             public void onAnimationEnd(Animator animation) {
                 onCloseEnd();
@@ -393,20 +411,6 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         postInvalidate();
     }
 
-    private void clearPaintToMove() {
-//        text.titlePaintLayout = null;
-//        text.subtitlePaintLayout = null;
-//        text.pageNumberPaintLayout = null;
-    }
-
-    private void clearPaintToClose() {
-//        text.titlePaintLayout = null;
-//        text.subtitlePaintLayout = null;
-        spotlight.setBorderPaint(null);
-        spotlight.setBorderGradientPaint(null);
-//        text.pageNumberPaintLayout = null;
-    }
-
     private void clearPaintToGrow() {
         spotlight.setBorderPaint(null);
         spotlight.setBorderGradientPaint(null);
@@ -425,11 +429,24 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
         return firstTarget;
     }
 
-    public void setFirstTarget(@NonNull SpotlightViewModel firstTarget) {
-        this.firstTarget = firstTarget;
+    public void setModels(@Nullable List<SpotlightViewModel> targets) {
+        if (targets == null || targets.size() <= 0) {
+            return;
+        }
+
+        final int size = targets.size();
+        for (int i = 0; i < size; i++) {
+            SpotlightViewModel viewModel = targets.get(i);
+            viewModel.setNumberOfPages(size);
+
+            if (i <= size - 2) {
+                viewModel.setNext(targets.get(i + 1));
+            }
+        }
+
+        this.firstTarget = targets.get(0);
 
         getViewTreeObserver().addOnGlobalLayoutListener(this);
-
         setVisibility(View.VISIBLE);
     }
 

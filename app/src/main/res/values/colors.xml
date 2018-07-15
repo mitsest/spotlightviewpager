@@ -4,6 +4,6 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
-    <color name="spotlight_border_color">@color/colorAccent</color>
-    <color name="inactive_page_color">@color/colorAccent</color>
+    <!--<color name="spotlight_border_color">@color/colorAccent</color>-->
+    <!--<color name="inactive_page_color">@color/colorAccent</color>-->
 </resources>

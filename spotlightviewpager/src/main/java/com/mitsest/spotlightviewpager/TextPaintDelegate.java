@@ -1,5 +1,7 @@
 package com.mitsest.spotlightviewpager;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.RectF;
@@ -11,9 +13,10 @@ import android.text.DynamicLayout;
 import android.text.Layout;
 import android.text.TextPaint;
 import android.text.TextUtils;
+import android.view.animation.LinearInterpolator;
 
 
-public class Text {
+public class TextPaintDelegate {
     private static final int PADDING_TOP_DP = 16;
     private static final int PADDING_LEFT_DP = 16;
     private static final int TITLE_DP = 20;
@@ -44,11 +47,13 @@ public class Text {
     private int page;
     private int numberOfPages;
 
-    public Text(@NonNull Context context) {
+    private @NonNull OpacityDelegate textOpacity;
+
+    public TextPaintDelegate(@NonNull Context context) {
         titlePaint = new TextPaint();
         subtitlePaint = new TextPaint();
         pageNumberPaint = new TextPaint();
-
+        textOpacity = new OpacityDelegate();
 
         paddingTop = Commons.dpToPx(context, PADDING_TOP_DP);
         paddingLeft = Commons.dpToPx(context, PADDING_LEFT_DP);
@@ -60,6 +65,7 @@ public class Text {
         setTextTitlePaint(titleSize, textColor);
         setTextSubtitlePaint(subtitleSize, textColor);
         setTextPageNumberPaint(pageNumberSize, textColor);
+
     }
 
     private boolean textFitsToBottomOfSpotlight(@NonNull RectF rectF, int bottom) {
@@ -109,7 +115,14 @@ public class Text {
         return textFitsToBottomOfSpotlight(viewModel, maxBottom);
     }
 
+    public ValueAnimator getTextOpacityAnimation() {
+        return textOpacity.getOpacityAnimator();
+    }
+
+
+
     void drawText(Canvas canvas, SpotlightViewModel viewModel) {
+
         canvas.save();
 
         canvas.translate(paddingLeft, 0);
@@ -152,18 +165,21 @@ public class Text {
 
     private void drawTitle(Canvas canvas) {
         if (titlePaintLayout != null) {
+            titlePaint.setAlpha(textOpacity.getOpacity());
             titlePaintLayout.draw(canvas);
         }
     }
 
     private void drawSubtitle(Canvas canvas) {
         if (subtitlePaintLayout != null) {
+            subtitlePaint.setAlpha(textOpacity.getOpacity());
             subtitlePaintLayout.draw(canvas);
         }
     }
 
     private void drawPageNumbers(Canvas canvas, int numberOfPages) {
         if (numberOfPages >= 2 && pageNumberPaintLayout != null) {
+            pageNumberPaint.setAlpha(textOpacity.getOpacity());
             pageNumberPaintLayout.draw(canvas);
         }
     }

@@ -57,9 +57,9 @@ class MainActivity : AppCompatActivity() {
                 targetView3)
 
 
-        viewModel.next = viewModel2
-        viewModel2.next = viewModel3
-        spotlightView.setFirstTarget(viewModel)
+        spotlightView.setModels(listOf(
+                viewModel, viewModel2, viewModel3
+        ))
 
     }
 }

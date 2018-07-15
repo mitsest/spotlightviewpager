@@ -1,5 +1,7 @@
 package com.mitsest.spotlightviewpager;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
@@ -21,7 +23,7 @@ public class SpotlightViewModel extends RectF {
     private @NonNull
     Subtitle subtitle;
     private @NonNull
-    Text text;
+    TextPaintDelegate textPaintDelegate;
 
     public SpotlightViewModel() {
     }
@@ -40,7 +42,7 @@ public class SpotlightViewModel extends RectF {
         this.subtitle = subtitle;
 
         if (targetView != null) {
-            this.text = new Text(targetView.getContext());
+            this.textPaintDelegate = new TextPaintDelegate(targetView.getContext());
         }
 
         this.targetView = new WeakReference<>(targetView);
@@ -49,10 +51,6 @@ public class SpotlightViewModel extends RectF {
                               @NonNull Subtitle subtitle,
                               @Nullable View targetView) {
         this(new RectF(), null, null, title, subtitle, targetView);
-    }
-
-    public SpotlightViewModel(SpotlightViewModel viewModel) {
-        this(viewModel, viewModel.getPrevious(), viewModel.getNext(), viewModel.getTitle(), viewModel.getSubtitleDelegate(), viewModel.getTargetView());
     }
 
     @NonNull
@@ -149,7 +147,7 @@ public class SpotlightViewModel extends RectF {
     }
 
     public void setTextPosition() {
-        boolean fitsBottom = text.tryDrawingTextToBottomOfSpotlight(this);
+        boolean fitsBottom = textPaintDelegate.tryDrawingTextToBottomOfSpotlight(this);
 
         if (!fitsBottom) {
             setTextPosition(Subtitle.SUBTITLE_TOP);
@@ -163,24 +161,28 @@ public class SpotlightViewModel extends RectF {
     }
 
     public void drawText(Canvas canvas) {
-        text.drawText(canvas, this);
+        textPaintDelegate.drawText(canvas, this);
     }
 
     public void setText() {
-        text.setText(this);
+        textPaintDelegate.setText(this);
     }
 
     public void setMaxWidth(int width) {
-        text.setMaxWidth(width);
+        textPaintDelegate.setMaxWidth(width);
     }
     public void setMaxBottom(int bottom) {
-        text.setMaxBottom(bottom);
+        textPaintDelegate.setMaxBottom(bottom);
     }
     public void setPage(int page) {
-        text.setPage(page);
+        textPaintDelegate.setPage(page);
     }
 
     public void setNumberOfPages(int numberOfPages) {
-        text.setNumberOfPages(numberOfPages);
+        textPaintDelegate.setNumberOfPages(numberOfPages);
+    }
+
+    public ValueAnimator getTextOpacityAnimation() {
+        return textPaintDelegate.getTextOpacityAnimation();
     }
 }
