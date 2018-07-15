@@ -16,8 +16,8 @@ import android.text.TextUtils;
 public class Text {
     private static final int PADDING_TOP_DP = 16;
     private static final int PADDING_LEFT_DP = 16;
-    private static final int TITLE_DP = 24;
-    private static final int SUBTITLE_DP = 18;
+    private static final int TITLE_DP = 20;
+    private static final int SUBTITLE_DP = 15;
     private static final int PAGE_NUMBER_DP = 12;
     int paddingTop;
     int paddingLeft;

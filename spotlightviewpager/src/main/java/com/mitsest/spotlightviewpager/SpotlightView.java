@@ -18,13 +18,14 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 
 
 public class SpotlightView extends ViewGroup implements View.OnClickListener, ViewTreeObserver.OnGlobalLayoutListener {
 
     private static final int PULSE_ANIMATION_SIZE_DP = 11;
-    private static final int ENTER_ANIMATION_DURATION = 320; // ms
+    private static final int ENTER_ANIMATION_DURATION = 800; // ms
     private static final int GROW_ANIMATION_DURATION = 300; // ms
     private static final int PULSE_ANIMATION_DURATION = 1900; // ms
     private static final int MOVE_ANIMATION_DURATION = 600; // ms
@@ -37,6 +38,9 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     @SuppressWarnings("NullableProblems")
     private @NonNull
     OffsetDelegate offsetDelegate;
+
+    private int backgroundOpacity = 0;
+    private static final int BACKGROUND_OPACITY_END = 235;
     private @NonNull
     @SuppressWarnings("NullableProblems")
     Paint backgroundPaint; // used to draw background overlay
@@ -110,6 +114,7 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
     }
 
     private void drawBackground(Canvas canvas) {
+        backgroundPaint.setAlpha(backgroundOpacity);
         canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), backgroundPaint);
     }
 
@@ -178,8 +183,39 @@ public class SpotlightView extends ViewGroup implements View.OnClickListener, Vi
             listener.onPageChanged(false);
         }
 
-        animateGrow(firstTarget);
+        animateBackground(firstTarget);
     }
+
+    private void animateBackground(final @NonNull SpotlightViewModel viewModel) {
+        final ValueAnimator opacityAnim = ValueAnimator.ofInt(0, BACKGROUND_OPACITY_END);
+        opacityAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                try {
+                    backgroundOpacity = Integer.valueOf(animation.getAnimatedValue().toString());
+                } catch (Exception e) {
+                    //
+                }
+            }
+        });
+
+        addPostInvalidateOnUpdate(opacityAnim);
+
+        opacityAnim.addListener(new Commons.AnimationListenerTG() {
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                animateGrow(viewModel);
+            }
+        });
+
+        opacityAnim.setInterpolator(new LinearInterpolator());
+        opacityAnim.setDuration(ENTER_ANIMATION_DURATION);
+        opacityAnim.start();
+
+
+    }
+
 
     private void animateGrow(@NonNull final SpotlightViewModel viewModel) {
         animatingRectangle = viewModel;
