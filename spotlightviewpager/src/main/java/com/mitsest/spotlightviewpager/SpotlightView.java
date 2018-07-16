@@ -300,6 +300,8 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
             return;
         }
 
+        isMoving = true;
+
         final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top", animatingRectangle.top, viewModel.top);
         final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", animatingRectangle.left, viewModel.left);
         final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", animatingRectangle.bottom, viewModel.bottom);
@@ -308,10 +310,6 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
         addPostInvalidateOnUpdate(rightAnim);
 
         rightAnim.addListener(new Commons.AnimationListenerTG() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                isMoving = true;
-            }
 
             @Override
             public void onAnimationEnd(Animator animation) {
