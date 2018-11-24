@@ -269,7 +269,6 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
     }
 
     private void animatePulse(@NonNull final SpotlightViewModel viewModel) {
-        animatingRectangle = viewModel;
         postInvalidate();
 
         final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top",
@@ -299,13 +298,15 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
         if (animatingRectangle == null) {
             return;
         }
+        final SpotlightViewModel tempViewModel = animatingRectangle;
+        animatingRectangle = viewModel;
 
         isMoving = true;
 
-        final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top", animatingRectangle.top, viewModel.top);
-        final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", animatingRectangle.left, viewModel.left);
-        final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", animatingRectangle.bottom, viewModel.bottom);
-        final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", animatingRectangle.right, viewModel.right);
+        final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top", tempViewModel.top, animatingRectangle.top);
+        final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", tempViewModel.left, animatingRectangle.left);
+        final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", tempViewModel.bottom, animatingRectangle.bottom);
+        final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", tempViewModel.right, animatingRectangle.right);
 
         addPostInvalidateOnUpdate(rightAnim);
 
@@ -434,11 +435,16 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
 
         final int size = targets.size();
         for (int i = 0; i < size; i++) {
-            SpotlightViewModel viewModel = targets.get(i);
+            final SpotlightViewModel viewModel = targets.get(i);
+
             viewModel.setNumberOfPages(size);
 
             if (i <= size - 2) {
                 viewModel.setNext(targets.get(i + 1));
+            }
+
+            if (i >= 1) {
+                viewModel.setPrevious(targets.get(i - 1));
             }
         }
 

@@ -71,7 +71,7 @@ public class SpotlightViewModel extends RectF {
         return previous;
     }
 
-    private void setPrevious(@Nullable SpotlightViewModel previous) {
+    public void setPrevious(@Nullable SpotlightViewModel previous) {
         this.previous = previous;
     }
 
@@ -81,12 +81,7 @@ public class SpotlightViewModel extends RectF {
     }
 
     public void setNext(@Nullable SpotlightViewModel next) {
-        if (next != null) {
-            next.setPrevious(this);
-        }
-
         this.next = next;
-
     }
 
     public void setLeft(float value) {
@@ -123,7 +118,7 @@ public class SpotlightViewModel extends RectF {
 
     @Nullable
     public View getTargetView() {
-        if (targetView == null) {
+        if (targetView == null || targetView.isEnqueued()) {
             return null;
         }
 
