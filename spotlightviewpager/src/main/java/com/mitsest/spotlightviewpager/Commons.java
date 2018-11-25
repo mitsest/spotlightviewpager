@@ -32,7 +32,7 @@ public class Commons {
         }
     }
 
-    public static void removeOnGlobalLayoutListenerTG(@NonNull View view, @NonNull ViewTreeObserver.OnGlobalLayoutListener listener) {
+    public static void removeOnGlobalLayoutListener(@NonNull View view, @NonNull ViewTreeObserver.OnGlobalLayoutListener listener) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             view.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
         } else {
@@ -41,7 +41,7 @@ public class Commons {
 
     }
 
-    public static class AnimationListenerTG implements Animator.AnimatorListener {
+    public static class AnimationListener implements Animator.AnimatorListener {
 
         @Override
         public void onAnimationStart(Animator animation) {

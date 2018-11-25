@@ -4,10 +4,12 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.support.annotation.Dimension;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -25,7 +27,7 @@ import android.view.animation.OvershootInterpolator;
 import java.util.List;
 
 
-public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayoutListener {
+public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGlobalLayoutListener {
 
     private static final int PULSE_ANIMATION_SIZE_DP = 11;
     private static final int ENTER_ANIMATION_DURATION = 800; // ms
@@ -34,43 +36,73 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
     private static final int PULSE_ANIMATION_DURATION = 1900; // ms
     private static final int MOVE_ANIMATION_DURATION = 600; // ms
     private static final int CLOSE_ANIMATION_DURATION = 220; // ms
-    private @Nullable ISpotlightView listener;
-    private @NonNull SpotlightPaint spotlight;
-    private @NonNull OffsetDelegate offsetDelegate;
-    private @NonNull OpacityDelegate backgroundOpacity;
 
-    private static final int OPACITY_FULL = 235;
-    private @NonNull Paint backgroundPaint; // used to draw background overlay
-    private @Nullable
-    SpotlightViewModel firstTarget; // Keeping a reference on first target
-    private @Nullable
-    SpotlightViewModel animatingRectangle; // Used in draw (its scale and bounds are changing)
-    // Keeping a reference for the following two, because we nullify them when spotlight grows.
-    private @NonNull Paint borderPaint;
-    private @NonNull Paint borderGradientPaint;
+    @NonNull private final SpotlightPaint spotlight;
+    @NonNull private final OffsetDelegate offsetDelegate;
+    @NonNull private final OpacityDelegate backgroundOpacityDelegate;
+    @NonNull private final Paint backgroundPaint;
+    @NonNull private final Paint borderPaint;
+    @NonNull private final Paint borderGradientPaint;
+    @NonNull private final OnSwipeTouchListener swipeTouchListener;
+
+    @Nullable private ISpotlightView listener;
+    @Nullable private SpotlightViewModel firstTarget;
+    @Nullable private SpotlightViewModel animatingRectangle; // Used in draw (its scale and bounds are changing)
+
+    @Dimension private int spotlightPulseAnimationSize;
+
     private boolean isMoving;
-    private int spotlightPulseAnimationSize;
-
-    private @NonNull OnSwipeTouchListener swipeTouchListener;
 
     public SpotlightView(@NonNull Context context) {
-        super(context);
-        init(context);
+        this(context, null);
     }
 
     public SpotlightView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context);
+        this(context, attrs, 0);
     }
 
     public SpotlightView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        spotlight = new SpotlightPaint(context);
+        borderGradientPaint = new Paint(spotlight.getBorderGradientPaint());
+        borderPaint = new Paint(spotlight.getBorderPaint());
+        backgroundPaint = new Paint();
+        offsetDelegate = new OffsetDelegate();
+        backgroundOpacityDelegate = new OpacityDelegate();
+        spotlightPulseAnimationSize = Commons.dpToPx(context, PULSE_ANIMATION_SIZE_DP);
+        swipeTouchListener = new OnSwipeTouchListener(context) {
+            @Override
+            public void onSwipeLeft() {
+                super.onSwipeLeft();
+                showNext();
+            }
+
+            @Override
+            public void onSwipeRight() {
+                super.onSwipeRight();
+                showPrevious();
+            }
+
+            @Override
+            public void onClick() {
+                super.onClick();
+                showNext();
+            }
+        };
+
         init(context);
+    }
+
+    public static void addSpotlightView(@NonNull Activity activity, @NonNull List<SpotlightViewModel> models) {
+        final ViewGroup rootLayout = activity.findViewById(android.R.id.content);
+        SpotlightView mView = new SpotlightView(activity);
+        rootLayout.addView(mView);
+        mView.setModels(models);
     }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        offsetDelegate.onLayoutDelegate(this, changed, l, t, r, b);
+        offsetDelegate.onLayout(this, changed, l, t, r, b);
     }
 
     private void init(@NonNull Context context) {
@@ -78,43 +110,19 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
 
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
-        spotlightPulseAnimationSize = Commons.dpToPx(context, PULSE_ANIMATION_SIZE_DP);
+        initBackgroundColor(context);
+        initBackgroundPaintColor(context);
 
-        setBackgroundColor(ContextCompat.getColor(context, R.color.transparent));
-
-        spotlight = new SpotlightPaint(context);
-
-        borderGradientPaint = new Paint(spotlight.getBorderGradientPaint());
-        borderPaint = new Paint(spotlight.getBorderPaint());
-
-        backgroundPaint = new Paint();
-        backgroundPaint.setColor(ContextCompat.getColor(context, R.color.spotlight_overlay_color));
-
-        offsetDelegate = new OffsetDelegate();
-
-        backgroundOpacity = new OpacityDelegate();
-
-        swipeTouchListener = new OnSwipeTouchListener(context) {
-            @Override
-            public void onSwipeLeft() {
-                super.onSwipeLeft();
-                SpotlightView.this.showNext();
-            }
-
-            @Override
-            public void onSwipeRight() {
-                super.onSwipeRight();
-                SpotlightView.this.showPrevious();
-            }
-
-            @Override
-            public void onClick() {
-                super.onClick();
-                SpotlightView.this.showNext();
-            }
-        };
         setOnClickListener(null);
         setOnTouchListener(swipeTouchListener);
+    }
+
+    private void initBackgroundColor(@NonNull Context context) {
+        setBackgroundColor(ContextCompat.getColor(context, R.color.transparent));
+    }
+
+    private void initBackgroundPaintColor(@NonNull Context context) {
+        backgroundPaint.setColor(ContextCompat.getColor(context, R.color.spotlight_overlay_color));
     }
 
     @Override
@@ -131,10 +139,9 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
     }
 
     private void drawBackground(Canvas canvas) {
-        backgroundPaint.setAlpha(backgroundOpacity.getOpacity());
+        backgroundPaint.setAlpha(backgroundOpacityDelegate.getOpacity());
         canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), backgroundPaint);
     }
-
 
     public void showNext() {
         if (isMoving || animatingRectangle == null) {
@@ -156,13 +163,11 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
         }
 
         if (animatingRectangle.getPrevious() == null) {
-            animateClose();
             return;
         }
 
         animateMove(animatingRectangle.getPrevious());
     }
-
 
     @Override
     public void onGlobalLayout() {
@@ -170,7 +175,7 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
             return;
         }
 
-        Commons.removeOnGlobalLayoutListenerTG(this, this);
+        Commons.removeOnGlobalLayoutListener(this, this);
 
         SpotlightViewModel viewModel = getFirstTarget();
 
@@ -198,10 +203,10 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
     }
 
     private void animateBackground(final @NonNull SpotlightViewModel viewModel) {
-        final ValueAnimator opacityAnim = backgroundOpacity.getOpacityAnimator();
+        final ValueAnimator opacityAnim = backgroundOpacityDelegate.getOpacityAnimator();
         addPostInvalidateOnUpdate(opacityAnim);
 
-        opacityAnim.addListener(new Commons.AnimationListenerTG() {
+        opacityAnim.addListener(new Commons.AnimationListener() {
 
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -223,14 +228,10 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
         opacityAnim.start();
     }
 
-
-
     private void animateGrow(@NonNull final SpotlightViewModel viewModel) {
         animatingRectangle = viewModel;
 
-        clearPaintToGrow();
-
-        postInvalidate();
+        clearBorderToPaint();
 
         final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top",
                 animatingRectangle.bottom - animatingRectangle.height() / 2, animatingRectangle.top);
@@ -246,11 +247,10 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
 
         addPostInvalidateOnUpdate(rightAnim);
 
-        rightAnim.addListener(new Commons.AnimationListenerTG() {
+        rightAnim.addListener(new Commons.AnimationListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-                spotlight.setSpotlightBorderGradientPaint(borderGradientPaint);
-                spotlight.setSpotlightBorderPaint(borderPaint);
+                undoClearBorderPaint();
             }
 
             @Override
@@ -269,21 +269,19 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
     }
 
     private void animatePulse(@NonNull final SpotlightViewModel viewModel) {
-        postInvalidate();
-
         final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top",
-                animatingRectangle.top, animatingRectangle.top - spotlightPulseAnimationSize, animatingRectangle.top);
+                viewModel.top, viewModel.top - spotlightPulseAnimationSize, viewModel.top);
 
-        final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", animatingRectangle.left, animatingRectangle.left - spotlightPulseAnimationSize, animatingRectangle.left);
-        final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", animatingRectangle.bottom, animatingRectangle.bottom + spotlightPulseAnimationSize, animatingRectangle.bottom);
-        final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", animatingRectangle.right, animatingRectangle.right + spotlightPulseAnimationSize, animatingRectangle.right);
+        final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", viewModel.left, viewModel.left - spotlightPulseAnimationSize, viewModel.left);
+        final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", viewModel.bottom, viewModel.bottom + spotlightPulseAnimationSize, viewModel.bottom);
+        final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", viewModel.right, viewModel.right + spotlightPulseAnimationSize, viewModel.right);
 
         addPostInvalidateOnUpdate(rightAnim);
-        rightAnim.addListener(new Commons.AnimationListenerTG() {
+        rightAnim.addListener(new Commons.AnimationListener() {
             @Override
             public void onAnimationStart(Animator animation) {
                 super.onAnimationStart(animation);
-                animateText(animatingRectangle);
+                animateText(viewModel);
             }
         });
 
@@ -310,7 +308,7 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
 
         addPostInvalidateOnUpdate(rightAnim);
 
-        rightAnim.addListener(new Commons.AnimationListenerTG() {
+        rightAnim.addListener(new Commons.AnimationListener() {
 
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -327,12 +325,10 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
 
     private void onMoveEnd(@NonNull final SpotlightViewModel viewModel) {
         animatePulse(viewModel);
-
+        isMoving = false;
         if (listener != null) {
 //            listener.onPageChanged(isLastPage());
         }
-
-        isMoving = false;
     }
 
     public void animateClose() {
@@ -357,7 +353,7 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
         });
         addPostInvalidateOnUpdate(radiusAnim);
 
-        radiusAnim.addListener(new Commons.AnimationListenerTG() {
+        radiusAnim.addListener(new Commons.AnimationListener() {
 
             @Override
             public void onAnimationStart(Animator animation) {
@@ -405,14 +401,20 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
         spotlight.setRadius(getContext());
         spotlight.setBorderPaint(spotlight.getBorderPaint());
         spotlight.setSpotlightBorderGradientPaint(borderGradientPaint);
-        spotlight.setSpotlightBorderPaint(borderPaint);
+        spotlight.initSpotlightBorderPaint(borderPaint);
 
         postInvalidate();
     }
 
-    private void clearPaintToGrow() {
+    private void clearBorderToPaint() {
         spotlight.setBorderPaint(null);
         spotlight.setBorderGradientPaint(null);
+        postInvalidate();
+    }
+
+    private void undoClearBorderPaint() {
+        spotlight.setSpotlightBorderGradientPaint(borderGradientPaint);
+        spotlight.initSpotlightBorderPaint(borderPaint);
     }
 
     public int getSpotLightPadding() {
@@ -441,10 +443,6 @@ public class SpotlightView extends View implements ViewTreeObserver.OnGlobalLayo
 
             if (i <= size - 2) {
                 viewModel.setNext(targets.get(i + 1));
-            }
-
-            if (i >= 1) {
-                viewModel.setPrevious(targets.get(i - 1));
             }
         }
 

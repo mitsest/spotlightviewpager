@@ -1,6 +1,5 @@
 package com.mitsest.spotlightviewpager;
 
-import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -13,7 +12,6 @@ import android.text.DynamicLayout;
 import android.text.Layout;
 import android.text.TextPaint;
 import android.text.TextUtils;
-import android.view.animation.LinearInterpolator;
 
 
 public class TextPaintDelegate {
@@ -22,32 +20,27 @@ public class TextPaintDelegate {
     private static final int TITLE_DP = 20;
     private static final int SUBTITLE_DP = 15;
     private static final int PAGE_NUMBER_DP = 12;
-    int paddingTop;
-    int paddingLeft;
-    @NonNull
-    TextPaint titlePaint; // used to draw title text
-    @Nullable
-    DynamicLayout titlePaintLayout;
-    @NonNull
-    TextPaint subtitlePaint; // used to draw subtitle
-    @Nullable
-    DynamicLayout subtitlePaintLayout;
-    @NonNull
-    TextPaint pageNumberPaint; // used to draw page numbers
-    @Nullable
-    DynamicLayout pageNumberPaintLayout;
-    private int titleSize;
-    private int subtitleSize;
-    private int pageNumberSize;
-    private @ColorInt
-    int textColor;
+
+    private final int paddingTop;
+    private final int paddingLeft;
+
+    @NonNull private final TextPaint titlePaint;
+    @NonNull private final TextPaint subtitlePaint;
+    @NonNull private final TextPaint pageNumberPaint;
+    private final int titleSize;
+    private final int subtitleSize;
+    @ColorInt private final int textColor;
+    @Nullable private DynamicLayout titlePaintLayout;
+    @Nullable private DynamicLayout subtitlePaintLayout;
+    @Nullable private DynamicLayout pageNumberPaintLayout;
+    private final int pageNumberSize;
     private int width;
     private int maxBottom;
 
     private int page;
     private int numberOfPages;
 
-    private @NonNull OpacityDelegate textOpacity;
+    private @NonNull final OpacityDelegate textOpacity;
 
     public TextPaintDelegate(@NonNull Context context) {
         titlePaint = new TextPaint();
@@ -120,7 +113,6 @@ public class TextPaintDelegate {
     }
 
 
-
     void drawText(Canvas canvas, SpotlightViewModel viewModel) {
 
         canvas.save();
@@ -160,7 +152,6 @@ public class TextPaintDelegate {
             drawPageNumbers(canvas, pageNumberSize);
         }
     }
-
 
 
     private void drawTitle(Canvas canvas) {

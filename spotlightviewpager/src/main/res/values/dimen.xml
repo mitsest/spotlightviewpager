@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="spotlight_border_size">4dp</dimen>
+    <dimen name="spotlight_border_radius">4dp</dimen>
+    <dimen name="spotlight_padding">4dp</dimen>
 </resources>

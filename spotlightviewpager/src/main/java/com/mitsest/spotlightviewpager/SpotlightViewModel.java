@@ -1,6 +1,5 @@
 package com.mitsest.spotlightviewpager;
 
-import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.graphics.Canvas;
 import android.graphics.RectF;
@@ -12,66 +11,44 @@ import java.lang.ref.WeakReference;
 
 public class SpotlightViewModel extends RectF {
 
-    @Nullable
-    private SpotlightViewModel previous;
-    @Nullable
-    private SpotlightViewModel next;
-    @Nullable
-    private String title;
-    @Nullable
-    private WeakReference<View> targetView;
-    private @NonNull
-    Subtitle subtitle;
-    private @NonNull
-    TextPaintDelegate textPaintDelegate;
+    @Nullable private SpotlightViewModel previous;
+    @Nullable private SpotlightViewModel next;
+    @NonNull private final String title;
+    @Nullable private final WeakReference<View> targetView;
+    @NonNull private final Subtitle subtitle;
+    @NonNull private final TextPaintDelegate textPaintDelegate;
 
-    public SpotlightViewModel() {
-    }
 
-    public SpotlightViewModel(
-            RectF r,
+    public SpotlightViewModel(@NonNull RectF r,
             @Nullable SpotlightViewModel previous,
             @Nullable SpotlightViewModel next,
-            @Nullable String title,
+            @NonNull String title,
             @NonNull Subtitle subtitle,
-            @Nullable View targetView) {
+            @NonNull View targetView) {
         super(r);
         this.previous = previous;
         this.next = next;
         this.title = title;
         this.subtitle = subtitle;
-
-        if (targetView != null) {
-            this.textPaintDelegate = new TextPaintDelegate(targetView.getContext());
-        }
-
+        this.textPaintDelegate = new TextPaintDelegate(targetView.getContext());
         this.targetView = new WeakReference<>(targetView);
     }
-    public SpotlightViewModel(@Nullable String title,
-                              @NonNull Subtitle subtitle,
-                              @Nullable View targetView) {
-        this(new RectF(), null, null, title, subtitle, targetView);
-    }
 
-    @NonNull
-    public Subtitle getSubtitleDelegate() {
-        return subtitle;
+    public SpotlightViewModel(@NonNull String title,
+                              @NonNull Subtitle subtitle,
+                              @NonNull View targetView) {
+        this(new RectF(), null, null, title, subtitle, targetView);
     }
 
     public String getSubtitle() {
         return subtitle.getSubtitle();
     }
 
-    public void setSubtitle(@NonNull Subtitle subtitle) {
-        this.subtitle = subtitle;
-    }
-
-    @Nullable
-    public SpotlightViewModel getPrevious() {
+    @Nullable public SpotlightViewModel getPrevious() {
         return previous;
     }
 
-    public void setPrevious(@Nullable SpotlightViewModel previous) {
+    private void setPrevious(@Nullable SpotlightViewModel previous) {
         this.previous = previous;
     }
 
@@ -81,6 +58,10 @@ public class SpotlightViewModel extends RectF {
     }
 
     public void setNext(@Nullable SpotlightViewModel next) {
+        if (next != null) {
+            next.setPrevious(this);
+        }
+
         this.next = next;
     }
 
@@ -100,7 +81,7 @@ public class SpotlightViewModel extends RectF {
         bottom = value;
     }
 
-    @Nullable
+    @NonNull
     public String getTitle() {
         return title;
     }
@@ -125,10 +106,6 @@ public class SpotlightViewModel extends RectF {
         return targetView.get();
     }
 
-    public void setTargetView(@Nullable View targetView) {
-        this.targetView = new WeakReference<>(targetView);
-    }
-
     public int getMaxLines() {
         return subtitle.getMaxLines();
     }
@@ -141,6 +118,10 @@ public class SpotlightViewModel extends RectF {
         return subtitle.getTextPosition();
     }
 
+    public void setTextPosition(@Subtitle.Gravity  int i) {
+        subtitle.setTextPosition(i);
+    }
+
     public void setTextPosition() {
         boolean fitsBottom = textPaintDelegate.tryDrawingTextToBottomOfSpotlight(this);
 
@@ -149,10 +130,6 @@ public class SpotlightViewModel extends RectF {
         } else {
             setTextPosition(Subtitle.SUBTITLE_BOTTOM);
         }
-    }
-
-    public void setTextPosition(int i) {
-        subtitle.setTextPosition(i);
     }
 
     public void drawText(Canvas canvas) {
@@ -166,9 +143,11 @@ public class SpotlightViewModel extends RectF {
     public void setMaxWidth(int width) {
         textPaintDelegate.setMaxWidth(width);
     }
+
     public void setMaxBottom(int bottom) {
         textPaintDelegate.setMaxBottom(bottom);
     }
+
     public void setPage(int page) {
         textPaintDelegate.setPage(page);
     }

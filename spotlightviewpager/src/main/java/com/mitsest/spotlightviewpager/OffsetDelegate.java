@@ -6,30 +6,29 @@ import android.support.annotation.Nullable;
 import android.view.View;
 
 public class OffsetDelegate {
-    private @NonNull
-    int[] offsetArray;
+    @NonNull private int[] offsetArray;
 
     public OffsetDelegate() {
         this.offsetArray = new int[2];
     }
 
-    private float getStartingLeft(int[] positionOnScreenArray) {
+    private float getStartingLeft(@NonNull int[] positionOnScreenArray) {
         return positionOnScreenArray[0] - offsetArray[0];
     }
 
-    private float getStartingTop(int[] positionOnScreenArray) {
+    private float getStartingTop(@NonNull int[] positionOnScreenArray) {
         return positionOnScreenArray[1] - offsetArray[1];
     }
 
-    private float computeStartingLeft(int[] positionOnScreenArray, int safeArea) {
+    private float computeStartingLeft(@NonNull int[] positionOnScreenArray, int safeArea) {
         return getStartingLeft(positionOnScreenArray) - safeArea;
     }
 
-    private float computeStartingTop(int[] positionOnScreenArray, int safeArea) {
+    private float computeStartingTop(@NonNull int[] positionOnScreenArray, int safeArea) {
         return getStartingTop(positionOnScreenArray) - safeArea;
     }
 
-    private float computeStartingRight(int[] positionOnScreenArray, int safeArea, @Nullable final View spotlightView) {
+    private float computeStartingRight(@NonNull int[] positionOnScreenArray, int safeArea, @Nullable final View spotlightView) {
         if (spotlightView == null) {
             return 0;
         }
@@ -45,8 +44,7 @@ public class OffsetDelegate {
         return getStartingTop(positionOnScreenArray) + spotlightView.getHeight() + safeArea;
     }
 
-    public @Nullable
-    RectF getRectFFromView(@Nullable View spotlightView, int safeArea) {
+    @Nullable public RectF getRectFFromView(@Nullable View spotlightView, int safeArea) {
         if (spotlightView == null) {
             return null;
         }
@@ -62,7 +60,7 @@ public class OffsetDelegate {
         return new RectF(rectLeft, rectTop, rectRight, rectBottom);
     }
 
-    protected void onLayoutDelegate(@NonNull View v, boolean changed, int left, int top, int right, int bottom) {
+    protected void onLayout(@NonNull View v, boolean changed, int left, int top, int right, int bottom) {
         v.getLocationInWindow(offsetArray);
     }
 

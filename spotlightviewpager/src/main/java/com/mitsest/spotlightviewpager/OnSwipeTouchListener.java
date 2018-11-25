@@ -9,7 +9,7 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
 
     private final GestureDetector gestureDetector;
 
-    public OnSwipeTouchListener (Context ctx){
+    public OnSwipeTouchListener(Context ctx) {
         gestureDetector = new GestureDetector(ctx, new GestureListener());
     }
 
@@ -22,6 +22,22 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
 //        }
 
         return gestureDetector.onTouchEvent(event);
+    }
+
+    public void onSwipeRight() {
+    }
+
+    public void onSwipeLeft() {
+    }
+
+    public void onSwipeTop() {
+    }
+
+    public void onSwipeBottom() {
+    }
+
+    public void onClick() {
+
     }
 
     private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
@@ -50,8 +66,7 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
                         }
                         result = true;
                     }
-                }
-                else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                } else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
                     if (diffY > 0) {
                         onSwipeBottom();
                     } else {
@@ -64,21 +79,5 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
             }
             return result;
         }
-    }
-
-    public void onSwipeRight() {
-    }
-
-    public void onSwipeLeft() {
-    }
-
-    public void onSwipeTop() {
-    }
-
-    public void onSwipeBottom() {
-    }
-
-    public void onClick() {
-
     }
 }

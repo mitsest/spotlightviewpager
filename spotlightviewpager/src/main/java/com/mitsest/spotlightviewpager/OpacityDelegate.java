@@ -1,14 +1,11 @@
 package com.mitsest.spotlightviewpager;
 
-import android.animation.Animator;
 import android.animation.ValueAnimator;
-import android.support.annotation.NonNull;
-import android.view.animation.LinearInterpolator;
 
 public class OpacityDelegate {
 
-    private int opacity = 0;
     private static final int OPACITY_FULL = 235;
+    private int opacity = 0;
 
     public ValueAnimator getOpacityAnimator() {
         final ValueAnimator opacityAnim = ValueAnimator.ofInt(0, OPACITY_FULL);
@@ -23,7 +20,7 @@ public class OpacityDelegate {
             }
         });
 
-        return  opacityAnim;
+        return opacityAnim;
     }
 
     public int getOpacity() {

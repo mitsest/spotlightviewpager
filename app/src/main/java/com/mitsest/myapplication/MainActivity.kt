@@ -15,14 +15,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         Handler().postDelayed({
-            showSpotlight(findViewById(R.id.spotlightView))
+            showSpotlight()
         }, 1000)
 
     }
 
-    private fun showSpotlight(spotlightView: SpotlightView?) {
+    private fun showSpotlight() {
 
-        spotlightView ?: return
         val targetView: View = findViewById(R.id.target)
         val viewModel = SpotlightViewModel(
                 "Lorem Ipsum",
@@ -57,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                 targetView3)
 
 
-        spotlightView.setModels(listOf(
+        SpotlightView.addSpotlightView(this, listOf(
                 viewModel, viewModel2, viewModel3
         ))
 
