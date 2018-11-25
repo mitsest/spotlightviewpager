@@ -1,4 +1,4 @@
-package com.mitsest.spotlightviewpager;
+package com.mitsest.spotlightviewpager.paint;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -13,8 +13,14 @@ import android.text.Layout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 
+import com.mitsest.spotlightviewpager.Commons;
+import com.mitsest.spotlightviewpager.R;
+import com.mitsest.spotlightviewpager.animation_delegate.OpacityDelegate;
+import com.mitsest.spotlightviewpager.model.SpotlightViewModel;
+import com.mitsest.spotlightviewpager.model.SubtitleModel;
 
-public class TextPaintDelegate {
+
+public class SpotlightTextPaint {
     private static final int PADDING_TOP_DP = 16;
     private static final int PADDING_LEFT_DP = 16;
     private static final int TITLE_DP = 20;
@@ -42,7 +48,7 @@ public class TextPaintDelegate {
 
     private @NonNull final OpacityDelegate textOpacity;
 
-    public TextPaintDelegate(@NonNull Context context) {
+    public SpotlightTextPaint(@NonNull Context context) {
         titlePaint = new TextPaint();
         subtitlePaint = new TextPaint();
         pageNumberPaint = new TextPaint();
@@ -104,7 +110,7 @@ public class TextPaintDelegate {
     }
 
 
-    boolean tryDrawingTextToBottomOfSpotlight(@NonNull final SpotlightViewModel viewModel) {
+    public boolean tryDrawingTextToBottomOfSpotlight(@NonNull final SpotlightViewModel viewModel) {
         return textFitsToBottomOfSpotlight(viewModel, maxBottom);
     }
 
@@ -113,13 +119,13 @@ public class TextPaintDelegate {
     }
 
 
-    void drawText(Canvas canvas, SpotlightViewModel viewModel) {
+    public void drawText(Canvas canvas, SpotlightViewModel viewModel) {
 
         canvas.save();
 
         canvas.translate(paddingLeft, 0);
 
-        if (viewModel.getTextPosition() == Subtitle.SUBTITLE_TOP) {
+        if (viewModel.getTextPosition() == SubtitleModel.SUBTITLE_TOP) {
             float topOffset = getTextOffsetTop(viewModel);
             drawText(canvas, topOffset);
         } else {
@@ -215,7 +221,7 @@ public class TextPaintDelegate {
         this.width = width - (paddingLeft * 2);
     }
 
-    public void setSubtitlePaintEllipsize(@NonNull final SpotlightViewModel viewModel, int maxLines) {
+    private void setSubtitlePaintEllipsize(@NonNull final SpotlightViewModel viewModel, int maxLines) {
         viewModel.setMaxLines(maxLines);
 
         if (!TextUtils.isEmpty(viewModel.getSubtitle())) {

@@ -1,4 +1,4 @@
-package com.mitsest.spotlightviewpager;
+package com.mitsest.spotlightviewpager.view;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -14,7 +14,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +23,13 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 
+import com.mitsest.spotlightviewpager.Commons;
+import com.mitsest.spotlightviewpager.R;
+import com.mitsest.spotlightviewpager.animation_delegate.OffsetDelegate;
+import com.mitsest.spotlightviewpager.animation_delegate.OpacityDelegate;
+import com.mitsest.spotlightviewpager.model.SpotlightViewModel;
+import com.mitsest.spotlightviewpager.paint.SpotlightPaint;
+
 import java.util.List;
 
 
@@ -31,9 +37,9 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
 
     private static final int PULSE_ANIMATION_SIZE_DP = 11;
     private static final int ENTER_ANIMATION_DURATION = 800; // ms
-    private static final int TEXT_ENTER_ANIMATION_DURATION = 1900; // ms
+    private static final int TEXT_ENTER_ANIMATION_DURATION = 1200; // ms
     private static final int GROW_ANIMATION_DURATION = 300; // ms
-    private static final int PULSE_ANIMATION_DURATION = 1900; // ms
+    private static final int PULSE_ANIMATION_DURATION = 1200; // ms
     private static final int MOVE_ANIMATION_DURATION = 600; // ms
     private static final int CLOSE_ANIMATION_DURATION = 220; // ms
 
@@ -223,7 +229,7 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
         final ValueAnimator opacityAnim = viewModel.getTextOpacityAnimation();
         addPostInvalidateOnUpdate(opacityAnim);
 
-        opacityAnim.setInterpolator(new LinearOutSlowInInterpolator());
+        opacityAnim.setInterpolator(new LinearInterpolator());
         opacityAnim.setDuration(TEXT_ENTER_ANIMATION_DURATION);
         opacityAnim.start();
     }
@@ -305,7 +311,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
         final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", tempViewModel.left, animatingRectangle.left);
         final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", tempViewModel.bottom, animatingRectangle.bottom);
         final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", tempViewModel.right, animatingRectangle.right);
-
         addPostInvalidateOnUpdate(rightAnim);
 
         rightAnim.addListener(new Commons.AnimationListener() {
@@ -400,8 +405,7 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
 
         spotlight.setRadius(getContext());
         spotlight.setBorderPaint(spotlight.getBorderPaint());
-        spotlight.setSpotlightBorderGradientPaint(borderGradientPaint);
-        spotlight.initSpotlightBorderPaint(borderPaint);
+        undoClearBorderPaint();
 
         postInvalidate();
     }
@@ -413,8 +417,8 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     }
 
     private void undoClearBorderPaint() {
-        spotlight.setSpotlightBorderGradientPaint(borderGradientPaint);
-        spotlight.initSpotlightBorderPaint(borderPaint);
+        spotlight.setBorderGradientPaint(borderGradientPaint);
+        spotlight.setBorderPaint(borderPaint);
     }
 
     public int getSpotLightPadding() {
@@ -450,6 +454,10 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
 
         getViewTreeObserver().addOnGlobalLayoutListener(this);
         setVisibility(View.VISIBLE);
+    }
+
+    public void show() {
+
     }
 
     interface ISpotlightView {

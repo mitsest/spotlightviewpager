@@ -1,4 +1,4 @@
-package com.mitsest.spotlightviewpager;
+package com.mitsest.spotlightviewpager.animation_delegate;
 
 import android.animation.ValueAnimator;
 

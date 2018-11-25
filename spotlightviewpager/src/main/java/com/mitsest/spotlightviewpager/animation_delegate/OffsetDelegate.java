@@ -1,4 +1,4 @@
-package com.mitsest.spotlightviewpager;
+package com.mitsest.spotlightviewpager.animation_delegate;
 
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
@@ -60,7 +60,7 @@ public class OffsetDelegate {
         return new RectF(rectLeft, rectTop, rectRight, rectBottom);
     }
 
-    protected void onLayout(@NonNull View v, boolean changed, int left, int top, int right, int bottom) {
+    public void onLayout(@NonNull View v, boolean changed, int left, int top, int right, int bottom) {
         v.getLocationInWindow(offsetArray);
     }
 

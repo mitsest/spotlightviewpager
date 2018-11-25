@@ -30,7 +30,7 @@
         android:layout_gravity="bottom|center_horizontal"
         android:layout_margin="20dp"/>
 
-    <!--<com.mitsest.spotlightviewpager.SpotlightView-->
+    <!--<com.mitsest.spotlightviewpager.view.SpotlightView-->
         <!--android:id="@+id/spotlightView"-->
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="match_parent" />-->

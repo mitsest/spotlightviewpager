@@ -1,4 +1,4 @@
-package com.mitsest.spotlightviewpager;
+package com.mitsest.spotlightviewpager.view;
 
 import android.content.Context;
 import android.view.GestureDetector;

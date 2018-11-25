@@ -1,4 +1,4 @@
-package com.mitsest.spotlightviewpager;
+package com.mitsest.spotlightviewpager.model;
 
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -6,12 +6,12 @@ import android.support.annotation.Nullable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-public class Subtitle {
+public class SubtitleModel {
     public static final int SUBTITLE_TOP = 0;
     public static final int SUBTITLE_BOTTOM = 1;
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({SUBTITLE_TOP, SUBTITLE_BOTTOM})
-    public @interface Gravity {}
+    @interface Gravity {}
 
     @Nullable private final String subtitle;
     private int maxLines;
@@ -19,7 +19,7 @@ public class Subtitle {
 
     @Gravity private int textPosition;
 
-    public Subtitle(@Nullable String subtitle, int maxLines) {
+    public SubtitleModel(@Nullable String subtitle, int maxLines) {
         this.subtitle = subtitle;
         this.maxLines = maxLines;
     }
@@ -29,19 +29,19 @@ public class Subtitle {
         return subtitle;
     }
 
-    public int getMaxLines() {
+    int getMaxLines() {
         return maxLines;
     }
 
-    public void setMaxLines(int maxLines) {
+    void setMaxLines(int maxLines) {
         this.maxLines = maxLines;
     }
 
-    public int getTextPosition() {
+    int getTextPosition() {
         return textPosition;
     }
 
-    public void setTextPosition(@Gravity int textPosition) {
+    void setTextPosition(@Gravity int textPosition) {
         this.textPosition = textPosition;
     }
 }

@@ -1,4 +1,4 @@
-package com.mitsest.spotlightviewpager;
+package com.mitsest.spotlightviewpager.paint;
 
 import android.content.Context;
 import android.graphics.BlurMaskFilter;
@@ -13,6 +13,9 @@ import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import android.support.v4.content.ContextCompat;
 
+import com.mitsest.spotlightviewpager.Commons;
+import com.mitsest.spotlightviewpager.R;
+
 public class SpotlightPaint {
     @Px private final int padding;
     @Px private final int borderSize;
@@ -23,7 +26,7 @@ public class SpotlightPaint {
     @Nullable private Paint borderGradientPaint; // used to draw spotlight border
     @Nullable private Paint borderPaint; // used to draw spotlight border
 
-    SpotlightPaint(@NonNull Context context) {
+    public SpotlightPaint(@NonNull Context context) {
         paint = new Paint();
         borderPaint = new Paint();
         borderGradientPaint = new Paint();
@@ -35,8 +38,8 @@ public class SpotlightPaint {
         setRadius(context);
 
         initSpotlightPaint();
-        initSpotlightBorderPaint();
-        setSpotlightBorderGradientPaint();
+        initBorderPaint();
+        initBorderGradientPaint();
 
     }
 
@@ -48,7 +51,7 @@ public class SpotlightPaint {
         radius = Commons.getDimenInPixels(context, R.dimen.spotlight_border_radius);
     }
 
-    public void setSpotlightBorderGradientPaint() {
+    private void initBorderGradientPaint() {
         borderGradientPaint = new Paint();
 
         borderGradientPaint.setStyle(Paint.Style.FILL_AND_STROKE);
@@ -63,18 +66,18 @@ public class SpotlightPaint {
 
     }
 
-    public void setSpotlightBorderGradientPaint(@Nullable Paint paint) {
+    public void setBorderGradientPaint(@Nullable Paint paint) {
         borderGradientPaint = paint;
     }
 
-    public void initSpotlightPaint() {
+    private void initSpotlightPaint() {
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         paint.setAntiAlias(true);
         paint.setDither(true);
     }
 
-    public void initSpotlightBorderPaint() {
+    private void initBorderPaint() {
         borderPaint = new Paint();
 
         borderPaint.setStyle(Paint.Style.FILL_AND_STROKE);
@@ -85,17 +88,17 @@ public class SpotlightPaint {
 
     }
 
-    public void initSpotlightBorderPaint(@Nullable Paint paint) {
+    public void setBorderPaint(@Nullable Paint paint) {
         borderPaint = paint;
     }
 
-    void drawSpotlight(Canvas canvas, RectF animatingRectangle) {
+    public void drawSpotlight(Canvas canvas, RectF animatingRectangle) {
         if (animatingRectangle != null) {
             canvas.drawRoundRect(animatingRectangle, radius, radius, paint);
         }
     }
 
-    void drawSpotlightBorder(Canvas canvas, RectF animatingRectangle) {
+    public void drawSpotlightBorder(Canvas canvas, RectF animatingRectangle) {
         if (animatingRectangle != null) {
 
             if (borderPaint != null) {
@@ -107,19 +110,9 @@ public class SpotlightPaint {
             }
         }
     }
-
-    @NonNull
-    public Paint getPaint() {
-        return paint;
-    }
-
     @Nullable
     public Paint getBorderPaint() {
         return borderPaint;
-    }
-
-    public void setBorderPaint(@Nullable Paint borderPaint) {
-        this.borderPaint = borderPaint;
     }
 
     @Nullable
@@ -127,9 +120,6 @@ public class SpotlightPaint {
         return borderGradientPaint;
     }
 
-    public void setBorderGradientPaint(@Nullable Paint borderGradientPaint) {
-        this.borderGradientPaint = borderGradientPaint;
-    }
 
     public int getPadding() {
         return padding;
@@ -141,13 +131,5 @@ public class SpotlightPaint {
 
     public void setRadius(@Px int radius) {
         this.radius = radius;
-    }
-
-    public int getBorderSize() {
-        return borderSize;
-    }
-
-    public int getBorderColor() {
-        return borderColor;
     }
 }
