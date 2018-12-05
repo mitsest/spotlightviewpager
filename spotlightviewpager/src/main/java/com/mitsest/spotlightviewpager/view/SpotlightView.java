@@ -51,7 +51,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     @NonNull private final Paint borderGradientPaint;
     @NonNull private final OnSwipeTouchListener swipeTouchListener;
 
-    @Nullable private ISpotlightView listener;
     @Nullable private SpotlightViewModel firstTarget;
     @Nullable private SpotlightViewModel animatingRectangle; // Used in draw (its scale and bounds are changing)
 
@@ -201,10 +200,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
             viewModel = viewModel.getNext();
         }
 
-        if (listener != null) {
-            listener.onPageChanged(false);
-        }
-
         animateBackground(firstTarget);
     }
 
@@ -302,15 +297,13 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
         if (animatingRectangle == null) {
             return;
         }
-        final SpotlightViewModel tempViewModel = animatingRectangle;
-        animatingRectangle = viewModel;
 
         isMoving = true;
 
-        final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top", tempViewModel.top, animatingRectangle.top);
-        final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", tempViewModel.left, animatingRectangle.left);
-        final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", tempViewModel.bottom, animatingRectangle.bottom);
-        final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", tempViewModel.right, animatingRectangle.right);
+        final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top", animatingRectangle.top, viewModel.top);
+        final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", animatingRectangle.left, viewModel.left);
+        final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", animatingRectangle.bottom, viewModel.bottom);
+        final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", animatingRectangle.right, viewModel.right);
         addPostInvalidateOnUpdate(rightAnim);
 
         rightAnim.addListener(new Commons.AnimationListener() {
@@ -329,11 +322,9 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     }
 
     private void onMoveEnd(@NonNull final SpotlightViewModel viewModel) {
+        animatingRectangle = viewModel;
         animatePulse(viewModel);
         isMoving = false;
-        if (listener != null) {
-//            listener.onPageChanged(isLastPage());
-        }
     }
 
     public void animateClose() {
@@ -382,10 +373,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     }
 
     private void onCloseEnd() {
-        if (listener != null) {
-            listener.onCloseAnimationFinish();
-        }
-
         setVisibility(View.GONE);
         reset();
 
@@ -425,9 +412,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
         return spotlight.getPadding();
     }
 
-    public void setListener(@Nullable ISpotlightView listener) {
-        this.listener = listener;
-    }
 
     @Nullable
     public SpotlightViewModel getFirstTarget() {
@@ -459,11 +443,4 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     public void show() {
 
     }
-
-    interface ISpotlightView {
-        void onPageChanged(boolean isLastPage);
-
-        void onCloseAnimationFinish();
-    }
-
 }
