@@ -45,11 +45,7 @@ public class OffsetDelegate {
         return getStartingTop(positionOnScreenArray) + spotlightView.getHeight() + safeArea;
     }
 
-    @Nullable public RectF getRectFFromView(@Nullable View spotlightView, int safeArea) {
-        if (spotlightView == null) {
-            return null;
-        }
-
+    @NonNull public RectF getRectFFromView(@NonNull View spotlightView, int safeArea) {
         int[] positionOnScreen = new int[2];
         spotlightView.getLocationInWindow(positionOnScreen);
 

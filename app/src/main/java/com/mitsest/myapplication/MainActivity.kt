@@ -21,6 +21,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showSpotlight() {
+        val spotlightView = SpotlightView.Builder.getInstance(this)
+                .setBackgroundOpacityAnimationDuration(800)
+                .setTextOpacityAnimationDuration(600)
+                .setSpotlightGrowAnimationDuration(300)
+                .setSpotlightPulseAnimationDuration(1200)
+                .setMoveAnimationDuration(750)
+                .setCloseAnimationDuration(220)
+                .build()
 
         val targetView: View = findViewById(R.id.target)
         val viewModel = SpotlightViewModel(
@@ -56,9 +64,7 @@ class MainActivity : AppCompatActivity() {
                 targetView3)
 
 
-        SpotlightView.addSpotlightView(this, listOf(
-                viewModel, viewModel2, viewModel3
-        ))
+        SpotlightView.addSpotlightView(this, spotlightView, listOf(viewModel, viewModel2, viewModel3))
 
     }
 }

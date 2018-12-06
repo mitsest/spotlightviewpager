@@ -17,7 +17,6 @@ import com.mitsest.spotlightviewpager.Commons;
 import com.mitsest.spotlightviewpager.R;
 
 public class SpotlightPaint {
-    @Px private final int padding;
     @Px private final int borderSize;
     @ColorInt private final int borderColor;
     @NonNull private final Paint paint; // used to draw spotlight
@@ -32,7 +31,6 @@ public class SpotlightPaint {
         borderGradientPaint = new Paint();
 
 
-        padding = Commons.getDimenInPixels(context, R.dimen.spotlight_padding);
         borderColor = ContextCompat.getColor(context, R.color.spotlight_border_color);
         borderSize = Commons.getDimenInPixels(context, R.dimen.spotlight_border_size);
         setRadius(context);
@@ -120,10 +118,6 @@ public class SpotlightPaint {
         return borderGradientPaint;
     }
 
-
-    public int getPadding() {
-        return padding;
-    }
 
     public int getRadius() {
         return radius;
