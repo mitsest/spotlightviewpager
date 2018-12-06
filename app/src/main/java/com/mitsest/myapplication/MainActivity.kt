@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
                 .setSpotlightPulseAnimationDuration(1200)
                 .setMoveAnimationDuration(750)
                 .setCloseAnimationDuration(220)
+                .setGrowRatio(0.7f)
                 .build()
 
         val targetView: View = findViewById(R.id.target)

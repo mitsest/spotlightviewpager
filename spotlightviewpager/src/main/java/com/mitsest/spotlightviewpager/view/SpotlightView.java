@@ -39,8 +39,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     @NonNull private final OffsetDelegate offsetDelegate;
     @NonNull private final OpacityDelegate backgroundOpacityDelegate;
     @NonNull private final Paint backgroundPaint;
-    @NonNull private final Paint borderPaint;
-    @NonNull private final Paint borderGradientPaint;
     @NonNull private final OnSwipeTouchListener swipeTouchListener;
 
     @Nullable private SpotlightViewModel firstTarget;
@@ -49,14 +47,19 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     @Px private final int spotlightPadding;
     @Px private final int spotlightPulseAnimationSize;
 
-    // Defaults
+    // Builder setters' defaults
     private int backgroundOpacityAnimationDuration = 800; // ms
     private int textOpacityAnimationDuration = 300; // ms
     private int spotlightGrowAnimationDuration = 300; // ms
     private int spotlightPulseAnimationDuration = 1200; // ms
     private int moveAnimationDuration = 750; // ms
     private int closeAnimationDuration = 220; // ms
+    private float growRatio = 0.5f;
 
+    // Allow gestures only when not moving
+    private boolean isMoving = false;
+
+    // Constructors
     public SpotlightView(@NonNull Context context) {
         this(context, null);
     }
@@ -68,8 +71,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     public SpotlightView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         spotlight = new SpotlightPaint(context);
-        borderGradientPaint = new Paint(spotlight.getBorderGradientPaint());
-        borderPaint = new Paint(spotlight.getBorderPaint());
         backgroundPaint = new Paint();
         offsetDelegate = new OffsetDelegate();
         backgroundOpacityDelegate = new OpacityDelegate();
@@ -99,12 +100,12 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     }
 
     private void showNext() {
-        if (animatingRectangle == null) {
+        if (animatingRectangle == null || isMoving) {
             return;
         }
 
         if (animatingRectangle.getNext() == null) {
-            animateClose();
+            animateClose(animatingRectangle);
             return;
         }
 
@@ -113,7 +114,7 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     }
 
     private void showPrevious() {
-        if (animatingRectangle == null) {
+        if (animatingRectangle == null || isMoving) {
             return;
         }
 
@@ -228,6 +229,7 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
      */
     private void animateGrow(@NonNull final SpotlightViewModel viewModel) {
         animatingRectangle = viewModel;
+        isMoving = true;
 
         new AnimationDelegate(getGrowAnimators()).animate(this,
                 new Commons.AnimationListener() {
@@ -249,23 +251,21 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
         }
 
         final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top",
-                animatingRectangle.bottom - animatingRectangle.height() / 2, animatingRectangle.top);
+                animatingRectangle.bottom - animatingRectangle.height() * growRatio, animatingRectangle.top);
         final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left",
-                animatingRectangle.right - animatingRectangle.width() / 2, animatingRectangle.left);
+                animatingRectangle.right - animatingRectangle.width() * growRatio, animatingRectangle.left);
         final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom",
-                animatingRectangle.bottom - animatingRectangle.height() / 2, animatingRectangle.bottom);
+                animatingRectangle.bottom - animatingRectangle.height() * growRatio, animatingRectangle.bottom);
         final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right",
-                animatingRectangle.right - animatingRectangle.width() / 2, animatingRectangle.right);
+                animatingRectangle.right - animatingRectangle.width() * growRatio, animatingRectangle.right);
 
         return new ValueAnimator[]{topAnim, leftAnim, bottomAnim, rightAnim};
     }
 
     private void onGrowStart() {
-        clearBorderPaint();
     }
 
     private void onGrowEnd(final @NonNull SpotlightViewModel viewModel) {
-        undoClearBorderPaint();
         animatePulse(viewModel);
 
     }
@@ -300,7 +300,8 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
         return new ValueAnimator[]{topAnim, leftAnim, bottomAnim, rightAnim};
     }
 
-        private void onPulseEnd(@NonNull final SpotlightViewModel viewModel) {
+    private void onPulseEnd(@NonNull final SpotlightViewModel viewModel) {
+        isMoving = false;
         animateText(viewModel);
     }
 
@@ -330,6 +331,8 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
      * ----------------------------------
      */
     private void animateMove(@NonNull final SpotlightViewModel viewModel) {
+        isMoving = true;
+
         new AnimationDelegate(getMoveAnimators(viewModel)).animate(this,
                 new Commons.AnimationListener() {
                     @Override
@@ -366,7 +369,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     }
 
     private void onMoveEnd(@NonNull final SpotlightViewModel viewModel) {
-        animatingRectangle = viewModel;
         animatePulse(viewModel);
     }
 
@@ -375,12 +377,14 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
      * Close animation
      * ----------------------------------
      */
-    public void animateClose() {
+    public void animateClose(@NonNull final SpotlightViewModel viewModel) {
+        isMoving = true;
+
         new AnimationDelegate(getCloseAnimators()).animate(this,
                 new Commons.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animator animation) {
-                        onCloseStart();
+                        onCloseStart(viewModel);
                     }
 
                     @Override
@@ -405,38 +409,23 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
         return new ValueAnimator[]{topAnim, leftAnim, bottomAnim, rightAnim, radiusAnim};
     }
 
-    private void onCloseStart() {
+    private void onCloseStart(@NonNull final SpotlightViewModel viewModel) {
+        viewModel.resetTextPaint();
         spotlight.setBorderPaint(null);
         spotlight.setBorderGradientPaint(null);
     }
 
     private void onCloseEnd() {
+        isMoving = false;
         setVisibility(View.GONE);
         reset();
     }
 
-
     private void reset() {
         spotlight.setRadius(getContext());
-        undoClearBorderPaint();
     }
 
-    private void clearBorderPaint() {
-        spotlight.setBorderPaint(null);
-        spotlight.setBorderGradientPaint(null);
-        postInvalidate();
-    }
 
-    private void undoClearBorderPaint() {
-        spotlight.setBorderGradientPaint(borderGradientPaint);
-        spotlight.setBorderPaint(borderPaint);
-    }
-
-    /*
-     * ----------------------------------
-     * Public API
-     * ----------------------------------
-     */
     private void setModels(@Nullable List<SpotlightViewModel> targets) {
         if (targets == null || targets.size() <= 0) {
             return;
@@ -498,6 +487,10 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
         }
         public Builder setCloseAnimationDuration(int closeAnimationDuration) {
             spotlightView.closeAnimationDuration = closeAnimationDuration;
+            return this;
+        }
+        public Builder setGrowRatio(float growRatio) {
+            spotlightView.growRatio = growRatio;
             return this;
         }
         @NonNull public SpotlightView build() {

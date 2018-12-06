@@ -18,7 +18,7 @@ public class Commons {
         try {
             return (int) context.getResources().getDimension(dimen);
         } catch (Resources.NotFoundException e) {
-            Log.d("spotlightviewpager", "getDimenInPixels", e);
+            Log.d("spotlightviewpager", "getDimenInPixels exception", e);
             return 0;
         }
     }
