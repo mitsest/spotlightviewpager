@@ -61,7 +61,7 @@ public class SpotlightViewModel extends RectF {
 
     public void setNext(@Nullable SpotlightViewModel next) {
         if (next != null) {
-            next.setPrevious(this);
+            next.previous = this;
         }
 
         this.next = next;

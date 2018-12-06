@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.support.annotation.Dimension;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
@@ -25,9 +24,9 @@ import android.view.animation.OvershootInterpolator;
 
 import com.mitsest.spotlightviewpager.Commons;
 import com.mitsest.spotlightviewpager.R;
-import com.mitsest.spotlightviewpager.animation_delegate.AnimationDelegate;
-import com.mitsest.spotlightviewpager.animation_delegate.OffsetDelegate;
-import com.mitsest.spotlightviewpager.animation_delegate.OpacityDelegate;
+import com.mitsest.spotlightviewpager.animation.AnimationDelegate;
+import com.mitsest.spotlightviewpager.animation.OffsetDelegate;
+import com.mitsest.spotlightviewpager.animation.OpacityDelegate;
 import com.mitsest.spotlightviewpager.model.SpotlightViewModel;
 import com.mitsest.spotlightviewpager.paint.SpotlightPaint;
 
@@ -333,10 +332,13 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
             return;
         }
 
-        final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top", animatingRectangle.top, viewModel.top);
-        final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", animatingRectangle.left, viewModel.left);
-        final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", animatingRectangle.bottom, viewModel.bottom);
-        final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", animatingRectangle.right, viewModel.right);
+        final SpotlightViewModel tempViewModel = animatingRectangle;
+        animatingRectangle = viewModel;
+
+        final ObjectAnimator topAnim = ObjectAnimator.ofFloat(animatingRectangle, "top", tempViewModel.top, viewModel.top);
+        final ObjectAnimator leftAnim = ObjectAnimator.ofFloat(animatingRectangle, "left", tempViewModel.left, viewModel.left);
+        final ObjectAnimator bottomAnim = ObjectAnimator.ofFloat(animatingRectangle, "bottom", tempViewModel.bottom, viewModel.bottom);
+        final ObjectAnimator rightAnim = ObjectAnimator.ofFloat(animatingRectangle, "right", tempViewModel.right, viewModel.right);
 
         new AnimationDelegate(new ValueAnimator[]{topAnim, leftAnim, bottomAnim, rightAnim}).animate(this,
                 new Commons.AnimationListener() {

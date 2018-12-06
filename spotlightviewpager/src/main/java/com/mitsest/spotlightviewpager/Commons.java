@@ -14,15 +14,6 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 
 public class Commons {
-    public static int dpToPx(@Nullable Context context, int dp) {
-        if (context == null) {
-            return dp;
-        }
-
-        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
-    }
-
     public static int getDimenInPixels(@NonNull Context context, @DimenRes int dimen) {
         try {
             return (int) context.getResources().getDimension(dimen);

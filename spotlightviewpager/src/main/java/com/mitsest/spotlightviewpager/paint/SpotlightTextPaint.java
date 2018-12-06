@@ -15,18 +15,12 @@ import android.text.TextUtils;
 
 import com.mitsest.spotlightviewpager.Commons;
 import com.mitsest.spotlightviewpager.R;
-import com.mitsest.spotlightviewpager.animation_delegate.OpacityDelegate;
+import com.mitsest.spotlightviewpager.animation.OpacityDelegate;
 import com.mitsest.spotlightviewpager.model.SpotlightViewModel;
 import com.mitsest.spotlightviewpager.model.SubtitleModel;
 
 
 public class SpotlightTextPaint {
-    private static final int PADDING_TOP_DP = 16;
-    private static final int PADDING_LEFT_DP = 16;
-    private static final int TITLE_DP = 20;
-    private static final int SUBTITLE_DP = 15;
-    private static final int PAGE_NUMBER_DP = 12;
-
     private final int paddingTop;
     private final int paddingLeft;
 
@@ -54,12 +48,13 @@ public class SpotlightTextPaint {
         pageNumberPaint = new TextPaint();
         textOpacity = new OpacityDelegate();
 
-        paddingTop = Commons.dpToPx(context, PADDING_TOP_DP);
-        paddingLeft = Commons.dpToPx(context, PADDING_LEFT_DP);
-        pageNumberSize = Commons.dpToPx(context, PAGE_NUMBER_DP);
+        paddingTop = Commons.getDimenInPixels(context, R.dimen.spotlight_text_padding_top);
+        paddingLeft = Commons.getDimenInPixels(context, R.dimen.spotlight_text_padding_left);
+        titleSize = Commons.getDimenInPixels(context, R.dimen.spotlight_text_title_dp);
+        subtitleSize = Commons.getDimenInPixels(context, R.dimen.spotlight_text_subtitle_dp);
+        pageNumberSize = Commons.getDimenInPixels(context, R.dimen.spotlight_page_number_dp);
+
         textColor = ContextCompat.getColor(context, R.color.spotlight_text_color);
-        titleSize = Commons.dpToPx(context, TITLE_DP);
-        subtitleSize = Commons.dpToPx(context, SUBTITLE_DP);
 
         setTextTitlePaint(titleSize, textColor);
         setTextSubtitlePaint(subtitleSize, textColor);
@@ -225,18 +220,21 @@ public class SpotlightTextPaint {
         viewModel.setMaxLines(maxLines);
 
         if (!TextUtils.isEmpty(viewModel.getSubtitle())) {
-            subtitlePaintLayout = new DynamicLayout(
-                    TextUtils.ellipsize(viewModel.getSubtitle(), subtitlePaint, width * maxLines, TextUtils.TruncateAt.MIDDLE),
-                    subtitlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
+            subtitlePaintLayout = getSubtitlePaintLayout(viewModel, maxLines);
 
             while (subtitlePaintLayout.getLineCount() > viewModel.getMaxLines()) {
                 --maxLines;
-                subtitlePaintLayout = new DynamicLayout(
-                        TextUtils.ellipsize(viewModel.getSubtitle(), subtitlePaint, width * maxLines, TextUtils.TruncateAt.MIDDLE),
-                        subtitlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
+                subtitlePaintLayout = getSubtitlePaintLayout(viewModel, maxLines);
             }
         }
 
+    }
+
+    @NonNull
+    private DynamicLayout getSubtitlePaintLayout(@NonNull final SpotlightViewModel viewModel, int maxLines) {
+        return subtitlePaintLayout = new DynamicLayout(
+                TextUtils.ellipsize(viewModel.getSubtitle(), subtitlePaint, width * maxLines, TextUtils.TruncateAt.MIDDLE),
+                subtitlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
     }
 
     public void setMaxBottom(int bottom) {
