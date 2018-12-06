@@ -50,6 +50,7 @@ public class Commons {
 
         @Override
         public void onAnimationRepeat(Animator animation) {
+            this.onAnimationStart(animation);
         }
     }
 

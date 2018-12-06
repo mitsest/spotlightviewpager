@@ -57,9 +57,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     private int moveAnimationDuration = 750; // ms
     private int closeAnimationDuration = 220; // ms
 
-    private boolean shouldDrawText; // text should be drawn only when the spotlight is not moving
-    private boolean animationFinished = true;
-
     public SpotlightView(@NonNull Context context) {
         this(context, null);
     }
@@ -102,7 +99,7 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     }
 
     private void showNext() {
-        if (animatingRectangle == null || !animationFinished) {
+        if (animatingRectangle == null) {
             return;
         }
 
@@ -116,7 +113,7 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     }
 
     private void showPrevious() {
-        if (animatingRectangle == null || !animationFinished) {
+        if (animatingRectangle == null) {
             return;
         }
 
@@ -172,7 +169,7 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
         spotlight.drawSpotlightBorder(canvas, animatingRectangle);
         spotlight.drawSpotlight(canvas, animatingRectangle);
 
-        if (shouldDrawText && animatingRectangle != null) {
+        if (animatingRectangle != null) {
             animatingRectangle.drawText(canvas);
         }
     }
@@ -231,8 +228,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
      */
     private void animateGrow(@NonNull final SpotlightViewModel viewModel) {
         animatingRectangle = viewModel;
-        animationFinished = false;
-        shouldDrawText = false;
 
         new AnimationDelegate(getGrowAnimators()).animate(this,
                 new Commons.AnimationListener() {
@@ -319,12 +314,10 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
                 new Commons.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animator animation) {
-                        shouldDrawText = true;
                     }
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        animationFinished = true;
                     }
                 },
                 textOpacityAnimationDuration, new LinearInterpolator());
@@ -337,12 +330,13 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
      * ----------------------------------
      */
     private void animateMove(@NonNull final SpotlightViewModel viewModel) {
-        animationFinished = false;
-        shouldDrawText = false;
-        postInvalidate();
-
         new AnimationDelegate(getMoveAnimators(viewModel)).animate(this,
                 new Commons.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        onMoveStart(viewModel);
+                    }
+
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         onMoveEnd(viewModel);
@@ -366,13 +360,13 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
         return new ValueAnimator[]{topAnim, leftAnim, bottomAnim, rightAnim};
     }
 
-    private void onMoveStart() {
-        shouldDrawText = false;
+    private void onMoveStart(@NonNull final SpotlightViewModel viewModel) {
+        viewModel.resetTextPaint();
+
     }
 
     private void onMoveEnd(@NonNull final SpotlightViewModel viewModel) {
         animatingRectangle = viewModel;
-        viewModel.resetTextPaint();
         animatePulse(viewModel);
     }
 
@@ -412,7 +406,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     }
 
     private void onCloseStart() {
-        shouldDrawText = false;
         spotlight.setBorderPaint(null);
         spotlight.setBorderGradientPaint(null);
     }
@@ -424,8 +417,6 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
 
 
     private void reset() {
-        shouldDrawText = false;
-
         spotlight.setRadius(getContext());
         undoClearBorderPaint();
     }

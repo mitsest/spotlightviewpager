@@ -55,7 +55,7 @@ public class SpotlightPaint {
         borderGradientPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         borderGradientPaint.setAntiAlias(true);
         borderGradientPaint.setDither(true);
-        borderGradientPaint.setStrokeWidth((float) (borderSize * 1.4));
+        borderGradientPaint.setStrokeWidth((float) (borderSize));
         if (radius > 0) {
             borderGradientPaint.setMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.OUTER));
         }
@@ -83,7 +83,6 @@ public class SpotlightPaint {
         borderPaint.setDither(true);
         borderPaint.setStrokeWidth(borderSize);
         borderPaint.setColor(borderColor);
-
     }
 
     public void setBorderPaint(@Nullable Paint paint) {
