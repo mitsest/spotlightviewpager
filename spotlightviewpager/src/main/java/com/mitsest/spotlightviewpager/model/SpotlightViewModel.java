@@ -157,4 +157,8 @@ public class SpotlightViewModel extends RectF {
     public ValueAnimator getTextOpacityAnimation() {
         return textPaint.getTextOpacityAnimation();
     }
+
+    public void resetTextPaint() {
+        textPaint.reset();
+    }
 }

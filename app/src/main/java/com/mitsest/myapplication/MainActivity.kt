@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     private fun showSpotlight() {
         val spotlightView = SpotlightView.Builder.getInstance(this)
                 .setBackgroundOpacityAnimationDuration(800)
-                .setTextOpacityAnimationDuration(600)
+                .setTextOpacityAnimationDuration(300)
                 .setSpotlightGrowAnimationDuration(300)
                 .setSpotlightPulseAnimationDuration(1200)
                 .setMoveAnimationDuration(750)

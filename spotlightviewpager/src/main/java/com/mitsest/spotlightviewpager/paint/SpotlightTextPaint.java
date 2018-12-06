@@ -24,9 +24,11 @@ public class SpotlightTextPaint {
     private final int paddingTop;
     private final int paddingLeft;
 
-    @NonNull private final TextPaint titlePaint;
-    @NonNull private final TextPaint subtitlePaint;
-    @NonNull private final TextPaint pageNumberPaint;
+    @NonNull private TextPaint titlePaint;
+    @NonNull private TextPaint subtitlePaint;
+    @NonNull private TextPaint pageNumberPaint;
+    @NonNull private OpacityDelegate textOpacity;
+
     private final int titleSize;
     private final int subtitleSize;
     @ColorInt private final int textColor;
@@ -39,8 +41,6 @@ public class SpotlightTextPaint {
 
     private int page;
     private int numberOfPages;
-
-    private @NonNull final OpacityDelegate textOpacity;
 
     public SpotlightTextPaint(@NonNull Context context) {
         titlePaint = new TextPaint();
@@ -232,7 +232,7 @@ public class SpotlightTextPaint {
 
     @NonNull
     private DynamicLayout getSubtitlePaintLayout(@NonNull final SpotlightViewModel viewModel, int maxLines) {
-        return subtitlePaintLayout = new DynamicLayout(
+        return new DynamicLayout(
                 TextUtils.ellipsize(viewModel.getSubtitle(), subtitlePaint, width * maxLines, TextUtils.TruncateAt.MIDDLE),
                 subtitlePaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
     }
@@ -247,5 +247,9 @@ public class SpotlightTextPaint {
 
     public void setNumberOfPages(int numberOfPages) {
         this.numberOfPages = numberOfPages;
+    }
+
+    public void reset() {
+        textOpacity = new OpacityDelegate();
     }
 }
