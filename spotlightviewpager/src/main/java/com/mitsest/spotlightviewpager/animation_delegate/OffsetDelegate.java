@@ -7,6 +7,7 @@ import android.view.View;
 
 public class OffsetDelegate {
     @NonNull private int[] offsetArray;
+    private boolean onLayoutRan = false;
 
     public OffsetDelegate() {
         this.offsetArray = new int[2];
@@ -62,6 +63,10 @@ public class OffsetDelegate {
 
     public void onLayout(@NonNull View v, boolean changed, int left, int top, int right, int bottom) {
         v.getLocationInWindow(offsetArray);
+        onLayoutRan = true;
     }
 
+    public boolean isOnLayoutRan() {
+        return onLayoutRan;
+    }
 }
