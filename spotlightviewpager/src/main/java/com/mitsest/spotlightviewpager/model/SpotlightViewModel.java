@@ -3,15 +3,20 @@ package com.mitsest.spotlightviewpager.model;
 import android.animation.ValueAnimator;
 import android.graphics.Canvas;
 import android.graphics.RectF;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.mitsest.spotlightviewpager.paint.SpotlightTextPaint;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 
 public class SpotlightViewModel extends RectF {
+    public static final int TEXT_TOP = 0;
+    public static final int TEXT_BOTTOM = 1;
 
     @Nullable private SpotlightViewModel previous;
     @Nullable private SpotlightViewModel next;
@@ -20,6 +25,7 @@ public class SpotlightViewModel extends RectF {
     @NonNull private final SubtitleModel subtitle;
     @NonNull private final SpotlightTextPaint textPaint;
 
+    @Gravity private int textPosition;
 
     public SpotlightViewModel(@NonNull RectF r,
             @Nullable SpotlightViewModel previous,
@@ -42,7 +48,12 @@ public class SpotlightViewModel extends RectF {
         this(new RectF(), null, null, title, subtitle, targetView);
     }
 
-    public String getSubtitle() {
+    @NonNull
+    public SubtitleModel getSubtitle() {
+        return subtitle;
+    }
+
+    public String getSubtitleString() {
         return subtitle.getSubtitle();
     }
 
@@ -96,7 +107,6 @@ public class SpotlightViewModel extends RectF {
         this.bottom = r.bottom;
 
         this.setText();
-        this.setTextPosition();
     }
 
     @Nullable
@@ -116,17 +126,13 @@ public class SpotlightViewModel extends RectF {
         subtitle.setMaxLines(lineCount);
     }
 
-    public int getTextPosition() {
-        return subtitle.getTextPosition();
-    }
-
     private void setTextPosition() {
-        boolean fitsBottom = textPaint.tryDrawingTextToBottomOfSpotlight(this);
+        boolean fitsBottom = textPaint.textFitsBottom(this);
 
         if (!fitsBottom) {
-            subtitle.setTextPosition(SubtitleModel.SUBTITLE_TOP);
+            setTextPosition(TEXT_TOP);
         } else {
-            subtitle.setTextPosition(SubtitleModel.SUBTITLE_BOTTOM);
+            setTextPosition(TEXT_BOTTOM);
         }
     }
 
@@ -135,6 +141,7 @@ public class SpotlightViewModel extends RectF {
     }
 
     private void setText() {
+        setTextPosition();
         textPaint.setText(this);
     }
 
@@ -157,8 +164,21 @@ public class SpotlightViewModel extends RectF {
     public ValueAnimator getTextOpacityAnimation() {
         return textPaint.getTextOpacityAnimation();
     }
+    @Gravity
+    public int getTextPosition() {
+        return textPosition;
+    }
+
+    void setTextPosition(@Gravity int textPosition) {
+        this.textPosition = textPosition;
+    }
 
     public void resetTextPaint() {
         textPaint.reset();
     }
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({TEXT_TOP, TEXT_BOTTOM})
+    public @interface Gravity {}
+
 }
