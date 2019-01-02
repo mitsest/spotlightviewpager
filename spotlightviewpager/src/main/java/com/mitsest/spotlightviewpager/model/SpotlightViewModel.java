@@ -24,6 +24,7 @@ public class SpotlightViewModel extends RectF {
     @Nullable private final WeakReference<View> targetView;
     @NonNull private final SubtitleModel subtitle;
     @NonNull private final SpotlightTextPaint textPaint;
+    @Nullable private final ISpotlightViewModel listener;
 
     @Gravity private int textPosition;
 
@@ -32,7 +33,7 @@ public class SpotlightViewModel extends RectF {
             @Nullable SpotlightViewModel next,
             @NonNull String title,
             @NonNull SubtitleModel subtitle,
-            @NonNull View targetView) {
+            @NonNull View targetView, @Nullable ISpotlightViewModel listener) {
         super(r);
         this.previous = previous;
         this.next = next;
@@ -40,13 +41,22 @@ public class SpotlightViewModel extends RectF {
         this.subtitle = subtitle;
         this.textPaint = new SpotlightTextPaint(targetView.getContext());
         this.targetView = new WeakReference<>(targetView);
+        this.listener = listener;
+    }
+
+    public SpotlightViewModel(@NonNull String title,
+                              @NonNull SubtitleModel subtitle,
+                              @NonNull View targetView,
+                              @Nullable ISpotlightViewModel listener) {
+        this(new RectF(), null, null, title, subtitle, targetView, listener);
     }
 
     public SpotlightViewModel(@NonNull String title,
                               @NonNull SubtitleModel subtitle,
                               @NonNull View targetView) {
-        this(new RectF(), null, null, title, subtitle, targetView);
+        this(title, subtitle, targetView, null);
     }
+
 
     @NonNull
     public SubtitleModel getSubtitle() {
@@ -161,6 +171,10 @@ public class SpotlightViewModel extends RectF {
         textPaint.setNumberOfPages(numberOfPages);
     }
 
+    public int getNumberOfPages() {
+        return textPaint.getNumberOfPages();
+    }
+
     public ValueAnimator getTextOpacityAnimation() {
         return textPaint.getTextOpacityAnimation();
     }
@@ -173,12 +187,25 @@ public class SpotlightViewModel extends RectF {
         this.textPosition = textPosition;
     }
 
+    public int getPage() {
+        return textPaint.getPage();
+    }
+
     public void resetTextPaint() {
         textPaint.reset();
+    }
+
+    public void onBeforePageChanged() {
+        if (listener != null) {
+            listener.onSpotlightViewBeforeMove();
+        }
     }
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({TEXT_TOP, TEXT_BOTTOM})
     public @interface Gravity {}
 
+    public interface ISpotlightViewModel {
+        void onSpotlightViewBeforeMove();
+    }
 }

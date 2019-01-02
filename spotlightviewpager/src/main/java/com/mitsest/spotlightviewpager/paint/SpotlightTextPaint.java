@@ -195,14 +195,12 @@ public class SpotlightTextPaint {
         }
 
         if (!TextUtils.isEmpty(viewModel.getTitle())) {
-            titlePaintLayout = DynamicLayout.Builder.obtain(
-                    viewModel.getTitle(), titlePaint, width).build();
+            titlePaintLayout = Commons.getDynamicLayout(viewModel.getTitle(), titlePaint, width);
         }
 
         setSubtitlePaintEllipsize(viewModel, viewModel.getMaxLines());
 
-        pageNumberPaintLayout = DynamicLayout.Builder.obtain(
-                page + "/" + numberOfPages, pageNumberPaint, width).build();
+        pageNumberPaintLayout = Commons.getDynamicLayout(page + "/" + numberOfPages, pageNumberPaint, width);
     }
 
     public void setMaxWidth(int width) {
@@ -228,9 +226,11 @@ public class SpotlightTextPaint {
 
     @NonNull
     private DynamicLayout getSubtitlePaintLayout(String text, int width, int maxLines) {
-        return DynamicLayout.Builder.obtain(
-                TextUtils.ellipsize(text, subtitlePaint, width * maxLines, TextUtils.TruncateAt.END), subtitlePaint, width
-        ).build();
+        return Commons.getDynamicLayout(
+                TextUtils.ellipsize(text, subtitlePaint, width * maxLines, TextUtils.TruncateAt.END),
+                subtitlePaint,
+                width
+        );
     }
 
     private boolean textFits(@NonNull final SpotlightViewModel viewModel) {
@@ -249,8 +249,16 @@ public class SpotlightTextPaint {
         this.page = page;
     }
 
+    public int getPage() {
+        return page;
+    }
+
     public void setNumberOfPages(int numberOfPages) {
         this.numberOfPages = numberOfPages;
+    }
+
+    public int getNumberOfPages() {
+        return numberOfPages;
     }
 
     public void reset() {

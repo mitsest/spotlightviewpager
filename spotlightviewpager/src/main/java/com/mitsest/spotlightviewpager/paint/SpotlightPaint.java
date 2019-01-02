@@ -22,6 +22,7 @@ public class SpotlightPaint {
     @NonNull private final Paint paint; // used to draw spotlight
 
     @Px private int radius;
+    @Px private int borderGradientRadius;
     @Nullable private Paint borderGradientPaint; // used to draw spotlight border
     @Nullable private Paint borderPaint; // used to draw spotlight border
 
@@ -47,6 +48,7 @@ public class SpotlightPaint {
         }
 
         radius = Commons.getDimenInPixels(context, R.dimen.spotlight_border_radius);
+        borderGradientRadius = Commons.getDimenInPixels(context, R.dimen.spotlight_border_gradient_radius);
     }
 
     private void initBorderGradientPaint() {
@@ -56,8 +58,8 @@ public class SpotlightPaint {
         borderGradientPaint.setAntiAlias(true);
         borderGradientPaint.setDither(true);
         borderGradientPaint.setStrokeWidth((float) (borderSize));
-        if (radius > 0) {
-            borderGradientPaint.setMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.OUTER));
+        if (borderGradientRadius > 0) {
+            borderGradientPaint.setMaskFilter(new BlurMaskFilter(borderGradientRadius, BlurMaskFilter.Blur.OUTER));
         }
 
         borderGradientPaint.setColor(borderColor);

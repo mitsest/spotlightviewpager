@@ -9,4 +9,5 @@
     <dimen name="spotlight_text_title_dp">20dp</dimen>
     <dimen name="spotlight_text_subtitle_dp">15dp</dimen>
     <dimen name="spotlight_page_number_dp">13dp</dimen>
+    <dimen name="spotlight_border_gradient_radius">20dp</dimen>
 </resources>

@@ -35,32 +35,23 @@ import java.util.List;
 
 public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGlobalLayoutListener {
 
-    @NonNull
-    private final SpotlightPaint spotlight;
-    @NonNull
-    private final OffsetDelegate offsetDelegate;
-    @NonNull
-    private final OpacityDelegate backgroundOpacityDelegate;
-    @Nullable
-    private Paint backgroundPaint;
-    @NonNull
-    private final OnSwipeTouchListener swipeTouchListener;
+    @NonNull private final SpotlightPaint spotlight;
+    @NonNull private final OffsetDelegate offsetDelegate;
+    @NonNull private final OpacityDelegate backgroundOpacityDelegate;
+    @Nullable private Paint backgroundPaint;
+    @NonNull private final OnSwipeTouchListener swipeTouchListener;
 
-    @Nullable
-    private SpotlightViewModel firstTarget;
-    @Nullable
-    private SpotlightViewModel animatingRectangle; // Used in draw (its scale and bounds are changing)
+    @Nullable private SpotlightViewModel firstTarget;
+    @Nullable private SpotlightViewModel animatingRectangle; // Used in draw (its scale and bounds are changing)
 
-    @Px
-    private final int spotlightPadding;
-    @Px
-    private final int spotlightPulseAnimationSize;
+    @Px private final int spotlightPadding;
+    @Px private final int spotlightPulseAnimationSize;
 
     // Builder setters' defaults
     private int backgroundOpacityAnimationDuration = 800; // ms
     private int textOpacityAnimationDuration = 300; // ms
-    private int spotlightGrowAnimationDuration = 300; // ms
-    private int spotlightPulseAnimationDuration = 1200; // ms
+    private int spotlightGrowAnimationDuration = 400; // ms
+    private int spotlightPulseAnimationDuration = 650; // ms
     private int moveAnimationDuration = 750; // ms
     private int closeAnimationDuration = 220; // ms
     private float growRatio = 0.5f;
@@ -277,6 +268,7 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     }
 
     private void onGrowStart() {
+
     }
 
     private void onGrowEnd(final @NonNull SpotlightViewModel viewModel) {
@@ -380,6 +372,9 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
     }
 
     private void onMoveStart(@NonNull final SpotlightViewModel viewModel) {
+        if (animatingRectangle != null) {
+            animatingRectangle.onBeforePageChanged();
+        }
         viewModel.resetTextPaint();
 
     }
@@ -428,8 +423,8 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
 
     private void onCloseStart(@NonNull final SpotlightViewModel viewModel) {
         viewModel.resetTextPaint();
-        spotlight.setBorderPaint(null);
-        spotlight.setBorderGradientPaint(null);
+//        spotlight.setBorderPaint(null);
+//        spotlight.setBorderGradientPaint(null);
     }
 
     private void onCloseEnd() {
@@ -472,11 +467,11 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
      * Public API
      * ----------------------------------
      */
-    public static void addSpotlightView(@NonNull Activity activity, @NonNull List<SpotlightViewModel> models) {
-        addSpotlightView(activity, null, models);
+    public static SpotlightView  addSpotlightView(@NonNull Activity activity, @NonNull List<SpotlightViewModel> models) {
+        return addSpotlightView(activity, null, models);
     }
 
-    public static void addSpotlightView(@NonNull Activity activity, @Nullable SpotlightView spotlightView, @NonNull List<SpotlightViewModel> models) {
+    public static SpotlightView addSpotlightView(@NonNull Activity activity, @Nullable SpotlightView spotlightView, @NonNull List<SpotlightViewModel> models) {
         if (spotlightView == null) {
             spotlightView = new SpotlightView(activity);
         }
@@ -484,6 +479,8 @@ public class SpotlightView extends ViewGroup implements ViewTreeObserver.OnGloba
         final ViewGroup rootLayout = activity.findViewById(android.R.id.content);
         rootLayout.addView(spotlightView);
         spotlightView.setModels(models);
+
+        return spotlightView;
     }
 
     public boolean isClosed() {
