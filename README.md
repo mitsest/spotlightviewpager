@@ -1,7 +1,6 @@
-# spotlightviewpager
+# Spotlight ViewPager
 A tutorial view with view pager functionality
 
-Inline-style:
 ![alt text](https://github.com/mitsest/spotlightviewpager/blob/master/device-2020-09-11-122350.gif "Library showcase")
 
 To instantiate a SpotlightTutorialView with the default arguments in your activity
