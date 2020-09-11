@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
                 targetView3)
 
 
-        SpotlightView.addSpotlightView(this, listOf(viewModel, viewModel2, viewModel3))
+        spotlightView = SpotlightView.addSpotlightView(this, listOf(viewModel, viewModel2, viewModel3))
 
     }
 
