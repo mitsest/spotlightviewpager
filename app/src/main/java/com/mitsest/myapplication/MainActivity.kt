@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
                         "Eum aut itaque sed maxime quo voluptatem rerum. Nisi dolore officia molestias. Nihil ut sed optio qui quo vel ea nesciunt. Accusamus nostrum quae iste nam. Cumque iure iure enim. Et aut id occaecati voluptatibus tenetur modi." +
                         "Sit minus repellat voluptatem odit. Quis qui quis ullam ut occaecati possimus corrupti laborum. Saepe quo eligendi excepturi. Aperiam et voluptates quam." +
                         "Distinctio enim nam fuga. Officiis reprehenderit totam ea vel similique. Deleniti beatae quo aut magnam harum tempore incidunt fuga. Enim aut nobis ullam iste eveniet numquam ut ut. Et velit quis odio ipsa enim aut ullam voluptatem. Quae tempore sint eum ratione ratione eligendi excepturi est.",
-                        9),
+                        7),
                 targetView)
 
         val targetView2: View = findViewById(R.id.target2)

@@ -3,5 +3,5 @@
     <color name="transparent">#00FFFFFF</color>
     <color name="spotlight_overlay_color">#EB171819</color>
     <color name="spotlight_text_color">#fff</color>
-    <color name="spotlight_border_color">#7d0c6db2</color>
+    <color name="spotlight_border_color">#9C27B0</color>
 </resources>
