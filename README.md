@@ -25,7 +25,7 @@ To instantiate a SpotlightTutorialView with the default arguments in your activi
                 SubtitleModel("Subtitle text", 13),
                 targetView3)
 
-        SpotlightView.addSpotlightView(this, listOf(viewModel, viewModel2, viewModel3))
+        SpotlightView.addSpotlightView(context, listOf(viewModel, viewModel2, viewModel3))
 
 ```
 
